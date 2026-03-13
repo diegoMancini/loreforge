@@ -33,6 +33,7 @@ migrate_working_dir/
 
 # Flutter SDK directory
 flutter/
+flutter_linux_3.24.3-stable.tar.xz
 
 # Symbolication related
 app.*.symbols
