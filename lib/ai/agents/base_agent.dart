@@ -1,20 +1,17 @@
 import '../providers/base_provider.dart';
 
-/// Base class for all AI agents.
-///
-/// Provides concrete default implementations of [generate] and [generateStream]
-/// that delegate directly to the injected [AIProvider]. Subclasses call these
-/// methods in their own prompt-building logic and may override them when they
-/// need specialised behaviour (e.g., retry logic, response parsing).
+/// Base class for all AI agents. Concrete agents extend this and call
+/// [generate] / [generateStream] which delegate to the injected provider.
 abstract class AIAgent {
   final AIProvider provider;
 
   AIAgent(this.provider);
 
-  /// Generates a complete text response for [prompt].
-  Future<String> generate(String prompt) => provider.generate(prompt);
+  /// Sends [prompt] to the provider and returns the complete response text.
+  Future<String> generate(String prompt, {int maxTokens = 1024}) =>
+      provider.generate(prompt);
 
-  /// Generates a streaming text response for [prompt].
+  /// Sends [prompt] to the provider and returns a streaming response.
   Future<Stream<String>> generateStream(String prompt) =>
       provider.generateStream(prompt);
 }
