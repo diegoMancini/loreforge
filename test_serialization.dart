@@ -9,6 +9,7 @@ void main() {
   final rpgState = RPGState.initial();
   final storyState = StoryState.initial().copyWith(
     genre: 'fantasy',
+    mode: 'rpg',
     rpgState: rpgState,
   );
   final sessionZero = SessionZero.initial().copyWith(
@@ -16,8 +17,8 @@ void main() {
     tone: 'epic',
   );
   final twistState = TwistState.initial().copyWith(
-    twist: 'betrayal',
-    description: 'A trusted ally betrays you',
+    seeds: ['betrayal'],
+    twistCount: 1,
   );
 
   // Test serialization
@@ -36,7 +37,7 @@ void main() {
 
   print('Deserialized story genre: ${storyFromJson.genre}');
   print('Deserialized session genre: ${sessionFromJson.genre}');
-  print('Deserialized twist: ${twistFromJson.twist}');
+  print('Deserialized twist count: ${twistFromJson.twistCount}');
 
   print('JSON serialization test passed!');
 }

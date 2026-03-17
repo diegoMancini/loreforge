@@ -6,15 +6,16 @@ part of 'twist_state.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-TwistState _$TwistStateFromJson(Map<String, dynamic> json) => TwistState(
-      twist: json['twist'] as String,
-      description: json['description'] as String,
-      activated: json['activated'] as bool,
+_$TwistStateImpl _$$TwistStateImplFromJson(Map<String, dynamic> json) =>
+    _$TwistStateImpl(
+      seeds: (json['seeds'] as List<dynamic>).map((e) => e as String).toList(),
+      twistCount: (json['twistCount'] as num).toInt(),
+      scenesSinceLastTwist: (json['scenesSinceLastTwist'] as num).toInt(),
     );
 
-Map<String, dynamic> _$TwistStateToJson(TwistState instance) =>
+Map<String, dynamic> _$$TwistStateImplToJson(_$TwistStateImpl instance) =>
     <String, dynamic>{
-      'twist': instance.twist,
-      'description': instance.description,
-      'activated': instance.activated,
+      'seeds': instance.seeds,
+      'twistCount': instance.twistCount,
+      'scenesSinceLastTwist': instance.scenesSinceLastTwist,
     };

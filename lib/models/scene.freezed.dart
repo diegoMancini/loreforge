@@ -18,6 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$Scene {
   String get narrative => throw _privateConstructorUsedError;
   List<String> get choices => throw _privateConstructorUsedError;
+  String? get background => throw _privateConstructorUsedError;
+  List<String>? get sprites => throw _privateConstructorUsedError;
 
   /// Create a copy of Scene
   /// with the given fields replaced by the non-null parameter values.
@@ -30,7 +32,11 @@ abstract class $SceneCopyWith<$Res> {
   factory $SceneCopyWith(Scene value, $Res Function(Scene) then) =
       _$SceneCopyWithImpl<$Res, Scene>;
   @useResult
-  $Res call({String narrative, List<String> choices});
+  $Res call(
+      {String narrative,
+      List<String> choices,
+      String? background,
+      List<String>? sprites});
 }
 
 /// @nodoc
@@ -50,6 +56,8 @@ class _$SceneCopyWithImpl<$Res, $Val extends Scene>
   $Res call({
     Object? narrative = null,
     Object? choices = null,
+    Object? background = freezed,
+    Object? sprites = freezed,
   }) {
     return _then(_value.copyWith(
       narrative: null == narrative
@@ -60,6 +68,14 @@ class _$SceneCopyWithImpl<$Res, $Val extends Scene>
           ? _value.choices
           : choices // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      background: freezed == background
+          ? _value.background
+          : background // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sprites: freezed == sprites
+          ? _value.sprites
+          : sprites // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
     ) as $Val);
   }
 }
@@ -71,7 +87,11 @@ abstract class _$$SceneImplCopyWith<$Res> implements $SceneCopyWith<$Res> {
       __$$SceneImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String narrative, List<String> choices});
+  $Res call(
+      {String narrative,
+      List<String> choices,
+      String? background,
+      List<String>? sprites});
 }
 
 /// @nodoc
@@ -89,6 +109,8 @@ class __$$SceneImplCopyWithImpl<$Res>
   $Res call({
     Object? narrative = null,
     Object? choices = null,
+    Object? background = freezed,
+    Object? sprites = freezed,
   }) {
     return _then(_$SceneImpl(
       narrative: null == narrative
@@ -99,6 +121,14 @@ class __$$SceneImplCopyWithImpl<$Res>
           ? _value._choices
           : choices // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      background: freezed == background
+          ? _value.background
+          : background // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sprites: freezed == sprites
+          ? _value._sprites
+          : sprites // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
     ));
   }
 }
@@ -107,8 +137,12 @@ class __$$SceneImplCopyWithImpl<$Res>
 
 class _$SceneImpl implements _Scene {
   const _$SceneImpl(
-      {required this.narrative, required final List<String> choices})
-      : _choices = choices;
+      {required this.narrative,
+      required final List<String> choices,
+      this.background,
+      final List<String>? sprites})
+      : _choices = choices,
+        _sprites = sprites;
 
   @override
   final String narrative;
@@ -121,8 +155,20 @@ class _$SceneImpl implements _Scene {
   }
 
   @override
+  final String? background;
+  final List<String>? _sprites;
+  @override
+  List<String>? get sprites {
+    final value = _sprites;
+    if (value == null) return null;
+    if (_sprites is EqualUnmodifiableListView) return _sprites;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
   String toString() {
-    return 'Scene(narrative: $narrative, choices: $choices)';
+    return 'Scene(narrative: $narrative, choices: $choices, background: $background, sprites: $sprites)';
   }
 
   @override
@@ -132,12 +178,19 @@ class _$SceneImpl implements _Scene {
             other is _$SceneImpl &&
             (identical(other.narrative, narrative) ||
                 other.narrative == narrative) &&
-            const DeepCollectionEquality().equals(other._choices, _choices));
+            const DeepCollectionEquality().equals(other._choices, _choices) &&
+            (identical(other.background, background) ||
+                other.background == background) &&
+            const DeepCollectionEquality().equals(other._sprites, _sprites));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, narrative, const DeepCollectionEquality().hash(_choices));
+      runtimeType,
+      narrative,
+      const DeepCollectionEquality().hash(_choices),
+      background,
+      const DeepCollectionEquality().hash(_sprites));
 
   /// Create a copy of Scene
   /// with the given fields replaced by the non-null parameter values.
@@ -151,12 +204,18 @@ class _$SceneImpl implements _Scene {
 abstract class _Scene implements Scene {
   const factory _Scene(
       {required final String narrative,
-      required final List<String> choices}) = _$SceneImpl;
+      required final List<String> choices,
+      final String? background,
+      final List<String>? sprites}) = _$SceneImpl;
 
   @override
   String get narrative;
   @override
   List<String> get choices;
+  @override
+  String? get background;
+  @override
+  List<String>? get sprites;
 
   /// Create a copy of Scene
   /// with the given fields replaced by the non-null parameter values.

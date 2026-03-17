@@ -14,12 +14,22 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+StoryState _$StoryStateFromJson(Map<String, dynamic> json) {
+  return _StoryState.fromJson(json);
+}
+
 /// @nodoc
 mixin _$StoryState {
   String get genre => throw _privateConstructorUsedError;
   List<String> get scenes => throw _privateConstructorUsedError;
   List<String> get choices => throw _privateConstructorUsedError;
   Map<String, dynamic> get worldState => throw _privateConstructorUsedError;
+  TwistState get twistState => throw _privateConstructorUsedError;
+  String get mode => throw _privateConstructorUsedError;
+  RPGState? get rpgState => throw _privateConstructorUsedError;
+
+  /// Serializes this StoryState to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of StoryState
   /// with the given fields replaced by the non-null parameter values.
@@ -38,7 +48,13 @@ abstract class $StoryStateCopyWith<$Res> {
       {String genre,
       List<String> scenes,
       List<String> choices,
-      Map<String, dynamic> worldState});
+      Map<String, dynamic> worldState,
+      TwistState twistState,
+      String mode,
+      RPGState? rpgState});
+
+  $TwistStateCopyWith<$Res> get twistState;
+  $RPGStateCopyWith<$Res>? get rpgState;
 }
 
 /// @nodoc
@@ -60,6 +76,9 @@ class _$StoryStateCopyWithImpl<$Res, $Val extends StoryState>
     Object? scenes = null,
     Object? choices = null,
     Object? worldState = null,
+    Object? twistState = null,
+    Object? mode = null,
+    Object? rpgState = freezed,
   }) {
     return _then(_value.copyWith(
       genre: null == genre
@@ -78,7 +97,43 @@ class _$StoryStateCopyWithImpl<$Res, $Val extends StoryState>
           ? _value.worldState
           : worldState // ignore: cast_nullable_to_non_nullable
               as Map<String, dynamic>,
+      twistState: null == twistState
+          ? _value.twistState
+          : twistState // ignore: cast_nullable_to_non_nullable
+              as TwistState,
+      mode: null == mode
+          ? _value.mode
+          : mode // ignore: cast_nullable_to_non_nullable
+              as String,
+      rpgState: freezed == rpgState
+          ? _value.rpgState
+          : rpgState // ignore: cast_nullable_to_non_nullable
+              as RPGState?,
     ) as $Val);
+  }
+
+  /// Create a copy of StoryState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TwistStateCopyWith<$Res> get twistState {
+    return $TwistStateCopyWith<$Res>(_value.twistState, (value) {
+      return _then(_value.copyWith(twistState: value) as $Val);
+    });
+  }
+
+  /// Create a copy of StoryState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RPGStateCopyWith<$Res>? get rpgState {
+    if (_value.rpgState == null) {
+      return null;
+    }
+
+    return $RPGStateCopyWith<$Res>(_value.rpgState!, (value) {
+      return _then(_value.copyWith(rpgState: value) as $Val);
+    });
   }
 }
 
@@ -94,7 +149,15 @@ abstract class _$$StoryStateImplCopyWith<$Res>
       {String genre,
       List<String> scenes,
       List<String> choices,
-      Map<String, dynamic> worldState});
+      Map<String, dynamic> worldState,
+      TwistState twistState,
+      String mode,
+      RPGState? rpgState});
+
+  @override
+  $TwistStateCopyWith<$Res> get twistState;
+  @override
+  $RPGStateCopyWith<$Res>? get rpgState;
 }
 
 /// @nodoc
@@ -114,6 +177,9 @@ class __$$StoryStateImplCopyWithImpl<$Res>
     Object? scenes = null,
     Object? choices = null,
     Object? worldState = null,
+    Object? twistState = null,
+    Object? mode = null,
+    Object? rpgState = freezed,
   }) {
     return _then(_$StoryStateImpl(
       genre: null == genre
@@ -132,22 +198,40 @@ class __$$StoryStateImplCopyWithImpl<$Res>
           ? _value._worldState
           : worldState // ignore: cast_nullable_to_non_nullable
               as Map<String, dynamic>,
+      twistState: null == twistState
+          ? _value.twistState
+          : twistState // ignore: cast_nullable_to_non_nullable
+              as TwistState,
+      mode: null == mode
+          ? _value.mode
+          : mode // ignore: cast_nullable_to_non_nullable
+              as String,
+      rpgState: freezed == rpgState
+          ? _value.rpgState
+          : rpgState // ignore: cast_nullable_to_non_nullable
+              as RPGState?,
     ));
   }
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$StoryStateImpl extends _StoryState {
   const _$StoryStateImpl(
       {required this.genre,
       required final List<String> scenes,
       required final List<String> choices,
-      required final Map<String, dynamic> worldState})
+      required final Map<String, dynamic> worldState,
+      required this.twistState,
+      required this.mode,
+      this.rpgState})
       : _scenes = scenes,
         _choices = choices,
         _worldState = worldState,
         super._();
+
+  factory _$StoryStateImpl.fromJson(Map<String, dynamic> json) =>
+      _$$StoryStateImplFromJson(json);
 
   @override
   final String genre;
@@ -176,8 +260,15 @@ class _$StoryStateImpl extends _StoryState {
   }
 
   @override
+  final TwistState twistState;
+  @override
+  final String mode;
+  @override
+  final RPGState? rpgState;
+
+  @override
   String toString() {
-    return 'StoryState(genre: $genre, scenes: $scenes, choices: $choices, worldState: $worldState)';
+    return 'StoryState(genre: $genre, scenes: $scenes, choices: $choices, worldState: $worldState, twistState: $twistState, mode: $mode, rpgState: $rpgState)';
   }
 
   @override
@@ -189,16 +280,25 @@ class _$StoryStateImpl extends _StoryState {
             const DeepCollectionEquality().equals(other._scenes, _scenes) &&
             const DeepCollectionEquality().equals(other._choices, _choices) &&
             const DeepCollectionEquality()
-                .equals(other._worldState, _worldState));
+                .equals(other._worldState, _worldState) &&
+            (identical(other.twistState, twistState) ||
+                other.twistState == twistState) &&
+            (identical(other.mode, mode) || other.mode == mode) &&
+            (identical(other.rpgState, rpgState) ||
+                other.rpgState == rpgState));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
       genre,
       const DeepCollectionEquality().hash(_scenes),
       const DeepCollectionEquality().hash(_choices),
-      const DeepCollectionEquality().hash(_worldState));
+      const DeepCollectionEquality().hash(_worldState),
+      twistState,
+      mode,
+      rpgState);
 
   /// Create a copy of StoryState
   /// with the given fields replaced by the non-null parameter values.
@@ -207,6 +307,13 @@ class _$StoryStateImpl extends _StoryState {
   @pragma('vm:prefer-inline')
   _$$StoryStateImplCopyWith<_$StoryStateImpl> get copyWith =>
       __$$StoryStateImplCopyWithImpl<_$StoryStateImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$StoryStateImplToJson(
+      this,
+    );
+  }
 }
 
 abstract class _StoryState extends StoryState {
@@ -214,8 +321,14 @@ abstract class _StoryState extends StoryState {
       {required final String genre,
       required final List<String> scenes,
       required final List<String> choices,
-      required final Map<String, dynamic> worldState}) = _$StoryStateImpl;
+      required final Map<String, dynamic> worldState,
+      required final TwistState twistState,
+      required final String mode,
+      final RPGState? rpgState}) = _$StoryStateImpl;
   const _StoryState._() : super._();
+
+  factory _StoryState.fromJson(Map<String, dynamic> json) =
+      _$StoryStateImpl.fromJson;
 
   @override
   String get genre;
@@ -225,6 +338,12 @@ abstract class _StoryState extends StoryState {
   List<String> get choices;
   @override
   Map<String, dynamic> get worldState;
+  @override
+  TwistState get twistState;
+  @override
+  String get mode;
+  @override
+  RPGState? get rpgState;
 
   /// Create a copy of StoryState
   /// with the given fields replaced by the non-null parameter values.

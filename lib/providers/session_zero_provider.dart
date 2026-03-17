@@ -6,6 +6,13 @@ final sessionZeroProvider = StateNotifierProvider<SessionZeroNotifier, SessionZe
   return SessionZeroNotifier(ref);
 });
 
+// Alias that corrects a legacy snake_case reference in tone_step.dart.
+// tone_step.dart uses `sessionZero_provider` (snake_case) instead of
+// `sessionZeroProvider` (camelCase). Defining this alias here avoids
+// touching the protected screen file.
+// ignore: non_constant_identifier_names
+final sessionZero_provider = sessionZeroProvider;
+
 class SessionZeroNotifier extends StateNotifier<SessionZero> {
   final Ref _ref;
 
@@ -39,8 +46,13 @@ class SessionZeroNotifier extends StateNotifier<SessionZero> {
     state = state.copyWith(twistsEnabled: !state.twistsEnabled);
   }
 
+  /// Hands the full [SessionZero] configuration to the story pipeline.
+  ///
+  /// Calls [StoryNotifier.startNewStoryFromSessionZero] so that tone,
+  /// language, favoriteStories, and twistsEnabled all reach the AI agents
+  /// via [StoryState.worldState] — unlike the old call to [startNewStory]
+  /// which only forwarded genre and mode.
   void complete() {
-    // Start the story with the selected genre and mode
-    _ref.read(storyProvider.notifier).startNewStory(state.genre, state.mode);
+    _ref.read(storyProvider.notifier).startNewStoryFromSessionZero(state);
   }
 }

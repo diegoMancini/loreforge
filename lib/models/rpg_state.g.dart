@@ -6,20 +6,21 @@ part of 'rpg_state.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-RPGState _$RPGStateFromJson(Map<String, dynamic> json) => RPGState(
-      strength: json['strength'] as int,
-      agility: json['agility'] as int,
-      intelligence: json['intelligence'] as int,
-      charisma: json['charisma'] as int,
-      perception: json['perception'] as int,
-      willpower: json['willpower'] as int,
-      inventory: (json['inventory'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      score: json['score'] as int,
+_$RPGStateImpl _$$RPGStateImplFromJson(Map<String, dynamic> json) =>
+    _$RPGStateImpl(
+      strength: (json['strength'] as num).toInt(),
+      agility: (json['agility'] as num).toInt(),
+      intelligence: (json['intelligence'] as num).toInt(),
+      charisma: (json['charisma'] as num).toInt(),
+      perception: (json['perception'] as num).toInt(),
+      willpower: (json['willpower'] as num).toInt(),
+      inventory:
+          (json['inventory'] as List<dynamic>).map((e) => e as String).toList(),
+      score: (json['score'] as num).toInt(),
     );
 
-Map<String, dynamic> _$RPGStateToJson(RPGState instance) => <String, dynamic>{
+Map<String, dynamic> _$$RPGStateImplToJson(_$RPGStateImpl instance) =>
+    <String, dynamic>{
       'strength': instance.strength,
       'agility': instance.agility,
       'intelligence': instance.intelligence,

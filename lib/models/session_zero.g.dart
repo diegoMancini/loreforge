@@ -6,23 +6,26 @@ part of 'session_zero.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-SessionZero _$SessionZeroFromJson(Map<String, dynamic> json) => SessionZero(
-      playerName: json['playerName'] as String,
-      characterName: json['characterName'] as String,
+_$SessionZeroImpl _$$SessionZeroImplFromJson(Map<String, dynamic> json) =>
+    _$SessionZeroImpl(
+      language: json['language'] as String,
+      mode: json['mode'] as String,
+      setupMethod: json['setupMethod'] as String,
       genre: json['genre'] as String,
-      twist: json['twist'] as String,
-      difficulty: json['difficulty'] as String,
       tone: json['tone'] as String,
-      length: json['length'] as String,
+      favoriteStories: (json['favoriteStories'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      twistsEnabled: json['twistsEnabled'] as bool,
     );
 
-Map<String, dynamic> _$SessionZeroToJson(SessionZero instance) =>
+Map<String, dynamic> _$$SessionZeroImplToJson(_$SessionZeroImpl instance) =>
     <String, dynamic>{
-      'playerName': instance.playerName,
-      'characterName': instance.characterName,
+      'language': instance.language,
+      'mode': instance.mode,
+      'setupMethod': instance.setupMethod,
       'genre': instance.genre,
-      'twist': instance.twist,
-      'difficulty': instance.difficulty,
       'tone': instance.tone,
-      'length': instance.length,
+      'favoriteStories': instance.favoriteStories,
+      'twistsEnabled': instance.twistsEnabled,
     };
