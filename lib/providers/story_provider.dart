@@ -7,7 +7,7 @@ import 'package:riverpod/riverpod.dart';
 export '../ai/ai_client.dart' show AIClient;
 
 import '../models/story_state.dart';
-import '../models/scene.dart';
+import '../models/story_blueprint.dart';
 import '../models/rpg_state.dart';
 import '../models/session_zero.dart';
 import '../ai/ai_client.dart';
@@ -111,7 +111,84 @@ class StoryNotifier extends StateNotifier<StoryState> {
 
   void loadStory(StoryState loadedStory) {
     state = loadedStory;
-    // Generate a new scene based on the loaded state
-    generateNextScene();
+  }
+
+  /// Append a player choice to history.
+  void recordChoice(String choice) {
+    state = state.copyWith(choices: [...state.choices, choice]);
+  }
+
+  /// Append a scene narrative, capped at 50 entries.
+  void addScene(String narrative) {
+    final scenes = [...state.scenes, narrative];
+    if (scenes.length > 50) {
+      state = state.copyWith(scenes: scenes.sublist(scenes.length - 50));
+    } else {
+      state = state.copyWith(scenes: scenes);
+    }
+  }
+
+  /// Advance the blueprint's currentNodeId based on the chosen text.
+  void advanceBlueprint(String choiceText) {
+    final bp = state.blueprint;
+    if (bp == null) return;
+
+    // Blueprint node advancement — find the next node in sequence
+    final currentNodes = bp.nodes;
+    if (currentNodes.isEmpty) return;
+
+    // Find the node currently being rendered (lowest order not yet completed)
+    // and advance to the next node in the sequence
+    final worldState = state.worldState;
+    final currentOrder = worldState['_currentBlueprintOrder'] as int? ?? 0;
+    final nextOrder = currentOrder + 1;
+
+    if (nextOrder < currentNodes.length) {
+      state = state.copyWith(
+        worldState: {
+          ...worldState,
+          '_currentBlueprintOrder': nextOrder,
+          '_currentBeat': currentNodes[nextOrder].summary,
+          '_currentBeatType': currentNodes[nextOrder].type,
+        },
+      );
+    }
+  }
+
+  /// Update rolling story summary context.
+  void updateSummary({
+    required String summary,
+    required List<String> characters,
+    required List<String> threads,
+  }) {
+    state = state.copyWith(
+      storySummary: summary,
+      activeCharacters: characters,
+      activeThreads: threads,
+    );
+  }
+
+  /// Apply an RPG outcome (updated stats, inventory, score).
+  void applyRpgOutcome(RPGState updatedRpg) {
+    state = state.copyWith(rpgState: updatedRpg);
+  }
+
+  /// Add an item to RPG inventory.
+  void addInventoryItem(String item) {
+    final rpg = state.rpgState;
+    if (rpg == null) return;
+    state = state.copyWith(
+      rpgState: rpg.copyWith(inventory: [...rpg.inventory, item]),
+    );
+  }
+
+  /// Remove an item from RPG inventory.
+  void removeInventoryItem(String item) {
+    final rpg = state.rpgState;
+    if (rpg == null) return;
+    final updated = List<String>.from(rpg.inventory)..remove(item);
+    state = state.copyWith(
+      rpgState: rpg.copyWith(inventory: updated),
+    );
   }
 }

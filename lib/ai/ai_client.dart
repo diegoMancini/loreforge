@@ -6,6 +6,7 @@ import 'package:loreforge/ai/agents/consistency_auditor.dart';
 import 'package:loreforge/ai/agents/visual_director.dart';
 import 'package:loreforge/ai/agents/world_state_manager.dart';
 import 'package:loreforge/ai/providers/base_provider.dart';
+import 'package:loreforge/ai/providers/anthropic_provider.dart';
 import 'package:loreforge/ai/providers/mock_provider.dart';
 import 'package:loreforge/ai/story_context_manager.dart';
 import 'package:loreforge/models/scene.dart';
@@ -31,7 +32,10 @@ class AIClient {
   }
 
   AIClient._internal() {
-    _provider = MockProvider();
+    // Use the real Anthropic API when an API key is available (via --dart-define),
+    // fall back to MockProvider for tests and offline dev.
+    const apiKey = String.fromEnvironment('ANTHROPIC_API_KEY');
+    _provider = apiKey.isNotEmpty ? AnthropicProvider(apiKey) : MockProvider();
     _storyArchitect = StoryArchitect(_provider);
     _storyDirector = StoryDirector(_provider);
     _sceneWriter = SceneWriter(_provider);
@@ -68,27 +72,30 @@ class AIClient {
     return _storyArchitect.generateBlueprint(state);
   }
 
+  /// Extend the blueprint from [fromNodeId] with additional depth.
+  Future<StoryBlueprint> extendBlueprint(
+    StoryBlueprint current,
+    String fromNodeId,
+    StoryState state,
+  ) async {
+    return _storyArchitect.extendBlueprint(current, fromNodeId, state);
+  }
+
   /// Generates a fully assembled [Scene] synchronously (non-streaming).
   ///
   /// Runs the director → writer → choice-generator → auditor → visual pipeline.
   Future<Scene> generateScene(StoryState state) async {
-    // Step 1: Story Director plans the scene
-    await _storyDirector.planScene(state);
-
-    // Step 2: Scene Writer generates narrative
     final narrative = await _sceneWriter.writeScene(state);
-
-    // Step 3: Choice Generator creates options
     final choices = await _choiceGenerator.generateChoices(state, narrative);
 
-    // Step 4: Consistency Auditor validates
+    // Consistency Auditor validates
     final isConsistent =
         await _consistencyAuditor.validateScene(state, narrative, choices);
     if (!isConsistent) {
       // TODO(ws2): implement retry / fallback in Workstream 2
     }
 
-    // Step 5: Visual Director selects assets
+    // Visual Director selects assets
     final visualAssets = await _visualDirector.selectAssets(state, narrative);
 
     return Scene(
@@ -107,6 +114,7 @@ class AIClient {
   Future<Stream<String>> generateSceneStream(
     StoryState state, {
     BlueprintNode? blueprintNode,
+    Map<String, dynamic>? directorGuidance,
   }) async {
     // Inject blueprint beat hint into a transient worldState copy
     final enrichedState = blueprintNode != null
@@ -120,6 +128,17 @@ class AIClient {
         : state;
 
     return _sceneWriter.writeSceneStream(enrichedState);
+  }
+
+  /// Generate player choices for an already-streamed narrative.
+  Future<List<String>> generateChoicesOnly(
+      StoryState state, String narrative) async {
+    return _choiceGenerator.generateChoices(state, narrative);
+  }
+
+  /// Plan the next scene — returns a guidance map.
+  Future<Map<String, dynamic>> planNextScene(StoryState state) async {
+    return _storyDirector.planScene(state);
   }
 
   /// Builds an updated context summary for the story so far.

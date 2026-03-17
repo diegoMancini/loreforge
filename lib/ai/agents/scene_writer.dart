@@ -1,7 +1,7 @@
 import 'base_agent.dart';
 import '../../models/story_state.dart';
-import '../../models/genre_rules.dart';
 import '../../models/story_blueprint.dart';
+import '../../models/genre_rules.dart';
 import '../narrative_reference.dart';
 
 /// Writes narrative scene prose for both Pure Story and RPG Adventure modes.
@@ -21,20 +21,28 @@ class SceneWriter extends AIAgent {
   // Public surface
   // ---------------------------------------------------------------------------
 
-  Future<String> writeScene(StoryState state) async {
-    final prompt = _buildPrompt(state);
+  Future<String> writeScene(StoryState state,
+      {BlueprintNode? blueprintNode}) async {
+    final prompt = blueprintNode != null
+        ? _buildBlueprintPrompt(state, blueprintNode)
+        : _buildPrompt(state);
     return generate(prompt);
   }
 
-  Future<Stream<String>> writeSceneStream(StoryState state) async {
-    final prompt = _buildPrompt(state);
+  Future<Stream<String>> writeSceneStream(
+    StoryState state, {
+    BlueprintNode? blueprintNode,
+  }) async {
+    final prompt = blueprintNode != null
+        ? _buildBlueprintPrompt(state, blueprintNode)
+        : _buildPrompt(state);
     return generateStream(prompt);
   }
 
   /// Writes a scene that expands a specific blueprint node into full prose.
   Future<String> writeSceneFromBlueprint(
     StoryState state,
-    StoryBlueprintNode node,
+    BlueprintNode node,
   ) async {
     final prompt = _buildBlueprintPrompt(state, node);
     return generate(prompt);
@@ -116,7 +124,7 @@ class SceneWriter extends AIAgent {
     return buffer.toString();
   }
 
-  String _buildBlueprintPrompt(StoryState state, StoryBlueprintNode node) {
+  String _buildBlueprintPrompt(StoryState state, BlueprintNode node) {
     final rules = GenreRules.getRules(state.genre);
     final tone = state.worldState['_tone'] as String? ?? 'epic';
     final language = state.worldState['_language'] as String? ?? '';
@@ -140,15 +148,7 @@ class SceneWriter extends AIAgent {
     // --- Blueprint node context ---
     buffer.writeln('BLUEPRINT NODE');
     buffer.writeln('Summary: ${node.summary}');
-    if (node.tension.isNotEmpty) {
-      buffer.writeln('Tension: ${node.tension}');
-    }
-    if (node.mood.isNotEmpty) {
-      buffer.writeln('Mood: ${node.mood}');
-    }
-    if (node.plotArc.isNotEmpty) {
-      buffer.writeln('Plot arc position: ${node.plotArc}');
-    }
+    buffer.writeln('Type: ${node.type}');
     buffer.writeln();
 
     // --- Story context (token-safe) ---

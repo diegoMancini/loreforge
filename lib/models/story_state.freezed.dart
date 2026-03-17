@@ -26,7 +26,11 @@ mixin _$StoryState {
   Map<String, dynamic> get worldState => throw _privateConstructorUsedError;
   TwistState get twistState => throw _privateConstructorUsedError;
   String get mode => throw _privateConstructorUsedError;
+  String get storySummary => throw _privateConstructorUsedError;
+  List<String> get activeCharacters => throw _privateConstructorUsedError;
+  List<String> get activeThreads => throw _privateConstructorUsedError;
   RPGState? get rpgState => throw _privateConstructorUsedError;
+  StoryBlueprint? get blueprint => throw _privateConstructorUsedError;
 
   /// Serializes this StoryState to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +55,11 @@ abstract class $StoryStateCopyWith<$Res> {
       Map<String, dynamic> worldState,
       TwistState twistState,
       String mode,
-      RPGState? rpgState});
+      String storySummary,
+      List<String> activeCharacters,
+      List<String> activeThreads,
+      RPGState? rpgState,
+      StoryBlueprint? blueprint});
 
   $TwistStateCopyWith<$Res> get twistState;
   $RPGStateCopyWith<$Res>? get rpgState;
@@ -78,7 +86,11 @@ class _$StoryStateCopyWithImpl<$Res, $Val extends StoryState>
     Object? worldState = null,
     Object? twistState = null,
     Object? mode = null,
+    Object? storySummary = null,
+    Object? activeCharacters = null,
+    Object? activeThreads = null,
     Object? rpgState = freezed,
+    Object? blueprint = freezed,
   }) {
     return _then(_value.copyWith(
       genre: null == genre
@@ -105,10 +117,26 @@ class _$StoryStateCopyWithImpl<$Res, $Val extends StoryState>
           ? _value.mode
           : mode // ignore: cast_nullable_to_non_nullable
               as String,
+      storySummary: null == storySummary
+          ? _value.storySummary
+          : storySummary // ignore: cast_nullable_to_non_nullable
+              as String,
+      activeCharacters: null == activeCharacters
+          ? _value.activeCharacters
+          : activeCharacters // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      activeThreads: null == activeThreads
+          ? _value.activeThreads
+          : activeThreads // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       rpgState: freezed == rpgState
           ? _value.rpgState
           : rpgState // ignore: cast_nullable_to_non_nullable
               as RPGState?,
+      blueprint: freezed == blueprint
+          ? _value.blueprint
+          : blueprint // ignore: cast_nullable_to_non_nullable
+              as StoryBlueprint?,
     ) as $Val);
   }
 
@@ -152,7 +180,11 @@ abstract class _$$StoryStateImplCopyWith<$Res>
       Map<String, dynamic> worldState,
       TwistState twistState,
       String mode,
-      RPGState? rpgState});
+      String storySummary,
+      List<String> activeCharacters,
+      List<String> activeThreads,
+      RPGState? rpgState,
+      StoryBlueprint? blueprint});
 
   @override
   $TwistStateCopyWith<$Res> get twistState;
@@ -179,7 +211,11 @@ class __$$StoryStateImplCopyWithImpl<$Res>
     Object? worldState = null,
     Object? twistState = null,
     Object? mode = null,
+    Object? storySummary = null,
+    Object? activeCharacters = null,
+    Object? activeThreads = null,
     Object? rpgState = freezed,
+    Object? blueprint = freezed,
   }) {
     return _then(_$StoryStateImpl(
       genre: null == genre
@@ -206,10 +242,26 @@ class __$$StoryStateImplCopyWithImpl<$Res>
           ? _value.mode
           : mode // ignore: cast_nullable_to_non_nullable
               as String,
+      storySummary: null == storySummary
+          ? _value.storySummary
+          : storySummary // ignore: cast_nullable_to_non_nullable
+              as String,
+      activeCharacters: null == activeCharacters
+          ? _value._activeCharacters
+          : activeCharacters // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      activeThreads: null == activeThreads
+          ? _value._activeThreads
+          : activeThreads // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       rpgState: freezed == rpgState
           ? _value.rpgState
           : rpgState // ignore: cast_nullable_to_non_nullable
               as RPGState?,
+      blueprint: freezed == blueprint
+          ? _value.blueprint
+          : blueprint // ignore: cast_nullable_to_non_nullable
+              as StoryBlueprint?,
     ));
   }
 }
@@ -224,10 +276,16 @@ class _$StoryStateImpl extends _StoryState {
       required final Map<String, dynamic> worldState,
       required this.twistState,
       required this.mode,
-      this.rpgState})
+      this.storySummary = '',
+      final List<String> activeCharacters = const [],
+      final List<String> activeThreads = const [],
+      this.rpgState,
+      this.blueprint})
       : _scenes = scenes,
         _choices = choices,
         _worldState = worldState,
+        _activeCharacters = activeCharacters,
+        _activeThreads = activeThreads,
         super._();
 
   factory _$StoryStateImpl.fromJson(Map<String, dynamic> json) =>
@@ -264,11 +322,35 @@ class _$StoryStateImpl extends _StoryState {
   @override
   final String mode;
   @override
+  @JsonKey()
+  final String storySummary;
+  final List<String> _activeCharacters;
+  @override
+  @JsonKey()
+  List<String> get activeCharacters {
+    if (_activeCharacters is EqualUnmodifiableListView)
+      return _activeCharacters;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_activeCharacters);
+  }
+
+  final List<String> _activeThreads;
+  @override
+  @JsonKey()
+  List<String> get activeThreads {
+    if (_activeThreads is EqualUnmodifiableListView) return _activeThreads;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_activeThreads);
+  }
+
+  @override
   final RPGState? rpgState;
+  @override
+  final StoryBlueprint? blueprint;
 
   @override
   String toString() {
-    return 'StoryState(genre: $genre, scenes: $scenes, choices: $choices, worldState: $worldState, twistState: $twistState, mode: $mode, rpgState: $rpgState)';
+    return 'StoryState(genre: $genre, scenes: $scenes, choices: $choices, worldState: $worldState, twistState: $twistState, mode: $mode, storySummary: $storySummary, activeCharacters: $activeCharacters, activeThreads: $activeThreads, rpgState: $rpgState, blueprint: $blueprint)';
   }
 
   @override
@@ -284,8 +366,16 @@ class _$StoryStateImpl extends _StoryState {
             (identical(other.twistState, twistState) ||
                 other.twistState == twistState) &&
             (identical(other.mode, mode) || other.mode == mode) &&
+            (identical(other.storySummary, storySummary) ||
+                other.storySummary == storySummary) &&
+            const DeepCollectionEquality()
+                .equals(other._activeCharacters, _activeCharacters) &&
+            const DeepCollectionEquality()
+                .equals(other._activeThreads, _activeThreads) &&
             (identical(other.rpgState, rpgState) ||
-                other.rpgState == rpgState));
+                other.rpgState == rpgState) &&
+            (identical(other.blueprint, blueprint) ||
+                other.blueprint == blueprint));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -298,7 +388,11 @@ class _$StoryStateImpl extends _StoryState {
       const DeepCollectionEquality().hash(_worldState),
       twistState,
       mode,
-      rpgState);
+      storySummary,
+      const DeepCollectionEquality().hash(_activeCharacters),
+      const DeepCollectionEquality().hash(_activeThreads),
+      rpgState,
+      blueprint);
 
   /// Create a copy of StoryState
   /// with the given fields replaced by the non-null parameter values.
@@ -324,7 +418,11 @@ abstract class _StoryState extends StoryState {
       required final Map<String, dynamic> worldState,
       required final TwistState twistState,
       required final String mode,
-      final RPGState? rpgState}) = _$StoryStateImpl;
+      final String storySummary,
+      final List<String> activeCharacters,
+      final List<String> activeThreads,
+      final RPGState? rpgState,
+      final StoryBlueprint? blueprint}) = _$StoryStateImpl;
   const _StoryState._() : super._();
 
   factory _StoryState.fromJson(Map<String, dynamic> json) =
@@ -343,7 +441,15 @@ abstract class _StoryState extends StoryState {
   @override
   String get mode;
   @override
+  String get storySummary;
+  @override
+  List<String> get activeCharacters;
+  @override
+  List<String> get activeThreads;
+  @override
   RPGState? get rpgState;
+  @override
+  StoryBlueprint? get blueprint;
 
   /// Create a copy of StoryState
   /// with the given fields replaced by the non-null parameter values.

@@ -13,19 +13,20 @@ import '../../models/story_blueprint.dart';
 class StoryArchitect extends AIAgent {
   StoryArchitect(super.provider);
 
-  // ---------------------------------------------------------------------------
-  // AIAgent abstract method implementations
-  // ---------------------------------------------------------------------------
-
-  @override
-  Future<String> generate(String prompt) => provider.generate(prompt);
-
-  @override
-  Future<Stream<String>> generateStream(String prompt) =>
-      provider.generateStream(prompt);
-
   Future<StoryBlueprint> generateBlueprint(StoryState state) async {
     final prompt = _buildPrompt(state);
+    final response = await generate(prompt);
+    return _parseBlueprint(response, state);
+  }
+
+  /// Extends an existing [StoryBlueprint] from [fromNodeId] with additional
+  /// depth. Returns a partial blueprint containing only the new nodes.
+  Future<StoryBlueprint> extendBlueprint(
+    StoryBlueprint current,
+    String fromNodeId,
+    StoryState state,
+  ) async {
+    final prompt = _buildExtensionPrompt(current, fromNodeId, state);
     final response = await generate(prompt);
     return _parseBlueprint(response, state);
   }
@@ -39,7 +40,8 @@ class StoryArchitect extends AIAgent {
     final language = worldState['_language'] as String? ?? 'en';
     final twistsEnabled = worldState['_twistsEnabled'] as bool? ?? true;
     final favoriteStories =
-        (worldState['_favoriteStories'] as List<dynamic>?)?.cast<String>() ?? [];
+        (worldState['_favoriteStories'] as List<dynamic>?)?.cast<String>() ??
+            [];
 
     final premiseSection = storyPremise.isNotEmpty
         ? 'Story Premise: $storyPremise'
@@ -75,6 +77,27 @@ Respond ONLY with valid JSON — no markdown fences, no extra text.
 ''';
   }
 
+  String _buildExtensionPrompt(
+    StoryBlueprint current,
+    String fromNodeId,
+    StoryState state,
+  ) {
+    final tone = state.worldState['_tone'] as String? ?? 'epic';
+
+    return '''
+You are the Story Architect extending an existing blueprint.
+
+Current premise: ${current.premise}
+Tone: $tone
+Extend from node: $fromNodeId
+
+Generate 2–3 additional nodes that continue the story from the specified node.
+Output a JSON object with the same shape as the original blueprint (premise + nodes array).
+Only include the new continuation nodes, with order values continuing from where the existing nodes left off.
+Respond ONLY with valid JSON.
+''';
+  }
+
   /// Parses the AI response into a [StoryBlueprint].
   ///
   /// If the response is not valid JSON (e.g., mock provider returns plain text)
@@ -106,7 +129,8 @@ Respond ONLY with valid JSON — no markdown fences, no extra text.
         language: language,
         nodes: const [
           BlueprintNode(type: 'act', order: 0, summary: 'The adventure begins.'),
-          BlueprintNode(type: 'resolution', order: 1, summary: 'The story concludes.'),
+          BlueprintNode(
+              type: 'resolution', order: 1, summary: 'The story concludes.'),
         ],
       );
     }

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'twist_state.dart';
 import 'rpg_state.dart';
+import 'story_blueprint.dart';
 
 part 'story_state.freezed.dart';
 part 'story_state.g.dart';
@@ -14,14 +15,11 @@ class StoryState with _$StoryState {
     required Map<String, dynamic> worldState,
     required TwistState twistState,
     required String mode,
-    RPGState? rpgState,
-    /// Rolling prose summary of story so far — updated by StoryContextManager
-    /// after each scene. Replaces raw scene dumps in prompts to control tokens.
     @Default('') String storySummary,
-    /// Characters currently active in the narrative thread.
     @Default([]) List<String> activeCharacters,
-    /// Unresolved plot threads being tracked by the director.
     @Default([]) List<String> activeThreads,
+    RPGState? rpgState,
+    StoryBlueprint? blueprint,
   }) = _StoryState;
 
   factory StoryState.initial() => StoryState(

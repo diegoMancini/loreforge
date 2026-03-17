@@ -22,7 +22,11 @@ class LoreforgeColors {
   static const textSecondary = Color(0xFFB8A898);
   static const textMuted = Color(0xFF6B5F5F);
 
+  // ── Dim text (token cost, minor chrome) ──────────────────────────────────
+  static const textDim = Color(0xFF475569);
+
   // ── Genre accent (default; overridden per-genre at runtime) ───────────────
+  static const accent = accentGold; // alias used by wizard / credits
   static const accentGold = Color(0xFFD4A853);
   static const accentGoldDim = Color(0xFF8B6914);
 

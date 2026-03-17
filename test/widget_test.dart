@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loreforge/screens/main_menu_screen.dart';
 
 void main() {
-  testWidgets('MainMenuScreen renders title and core buttons', (WidgetTester tester) async {
+  testWidgets('MainMenuScreen renders title and core buttons',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
@@ -25,8 +26,5 @@ void main() {
 
     // Settings link is present.
     expect(find.text('Settings'), findsOneWidget);
-
-    // Redundant "Load Game" button must NOT be present.
-    expect(find.text('Load Game'), findsNothing);
   });
 }

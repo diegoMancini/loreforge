@@ -23,6 +23,18 @@ class StoryBlueprint {
         nodes: [],
       );
 
+  factory StoryBlueprint.fromJson(Map<String, dynamic> json) => StoryBlueprint(
+        premise: json['premise'] as String? ?? '',
+        tone: json['tone'] as String? ?? 'epic',
+        language: json['language'] as String? ?? 'en',
+        nodes: (json['nodes'] as List<dynamic>?)
+                ?.map((n) => BlueprintNode.fromJson(n as Map<String, dynamic>))
+                .toList() ??
+            [],
+        metadata:
+            (json['metadata'] as Map<String, dynamic>?) ?? {},
+      );
+
   Map<String, dynamic> toJson() => {
         'premise': premise,
         'tone': tone,

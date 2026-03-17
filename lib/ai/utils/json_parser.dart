@@ -53,6 +53,12 @@ class AIJsonParser {
     }
   }
 
+  /// Legacy name — delegates to [parseMap].
+  static Map<String, dynamic>? extractJsonObject(String response) {
+    final result = parseMap(response);
+    return result.isEmpty ? null : result;
+  }
+
   /// Parses [response] as a `Map<String, dynamic>`.
   /// Returns an empty map if parsing fails or the result is not a map.
   static Map<String, dynamic> parseMap(String response) {

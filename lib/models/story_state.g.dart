@@ -17,9 +17,21 @@ _$StoryStateImpl _$$StoryStateImplFromJson(Map<String, dynamic> json) =>
       twistState:
           TwistState.fromJson(json['twistState'] as Map<String, dynamic>),
       mode: json['mode'] as String,
+      storySummary: json['storySummary'] as String? ?? '',
+      activeCharacters: (json['activeCharacters'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      activeThreads: (json['activeThreads'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       rpgState: json['rpgState'] == null
           ? null
           : RPGState.fromJson(json['rpgState'] as Map<String, dynamic>),
+      blueprint: json['blueprint'] == null
+          ? null
+          : StoryBlueprint.fromJson(json['blueprint'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$StoryStateImplToJson(_$StoryStateImpl instance) =>
@@ -30,5 +42,9 @@ Map<String, dynamic> _$$StoryStateImplToJson(_$StoryStateImpl instance) =>
       'worldState': instance.worldState,
       'twistState': instance.twistState,
       'mode': instance.mode,
+      'storySummary': instance.storySummary,
+      'activeCharacters': instance.activeCharacters,
+      'activeThreads': instance.activeThreads,
       'rpgState': instance.rpgState,
+      'blueprint': instance.blueprint,
     };
