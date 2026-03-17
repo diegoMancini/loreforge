@@ -42,6 +42,11 @@ class SessionZeroNotifier extends StateNotifier<SessionZero> {
     state = state.copyWith(favoriteStories: [...state.favoriteStories, story]);
   }
 
+  void removeFavoriteStory(String story) {
+    final updated = List<String>.from(state.favoriteStories)..remove(story);
+    state = state.copyWith(favoriteStories: updated);
+  }
+
   void toggleTwists() {
     state = state.copyWith(twistsEnabled: !state.twistsEnabled);
   }

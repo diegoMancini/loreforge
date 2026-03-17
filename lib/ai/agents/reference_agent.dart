@@ -23,7 +23,7 @@ class ReferenceAgent extends AIAgent {
     if (favoriteStories.isEmpty) return {};
 
     final prompt = _buildAnalysisPrompt(favoriteStories);
-    final response = await generate(prompt, maxTokens: 512);
+    final response = await generate(prompt);
     return _parseResponse(response);
   }
 

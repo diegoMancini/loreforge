@@ -11,16 +11,11 @@ import '../models/story_state.dart';
 import '../theme/loreforge_theme.dart';
 import '../theme/genre_theme.dart' show GenreTheme;
 import '../widgets/atmosphere_background.dart';
-import '../widgets/mood_overlay.dart';
-import '../widgets/narrative_container.dart';
-import '../ai/token_tracker.dart';
 import '../game/rpg_engine.dart';
-import '../widgets/animated_stat_hud.dart';
 import 'character_sheet_overlay.dart';
 import 'inventory_overlay.dart';
 import 'story_log_overlay.dart';
 import 'pause_menu_overlay.dart';
-
 import '../providers/settings_provider.dart';
 
 /// Strip markdown formatting (bold, italic, headers) from AI output.
@@ -174,7 +169,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
     });
 
     ref.read(currentSceneProvider.notifier).clearScene();
-    await AudioManager().playMomentSfx('scene_start');
 
     final storyState = ref.read(storyProvider);
     final blueprint = storyState.blueprint;
@@ -210,9 +204,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
         };
         setState(() => _currentMood = derivedMood);
 
-        final isTense = node.type == 'twist' || node.type == 'climax';
-        await AudioManager().playBackgroundMusic(storyState.genre,
-            tension: isTense ? 'high' : 'normal');
+        await AudioManager().playBackgroundMusic(storyState.genre);
       }
 
       final stream = await AIClient().generateSceneStream(
@@ -293,8 +285,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
                 _ => 'mysterious',
               };
             });
-            await AudioManager().playBackgroundMusic(storyState.genre,
-                tension: tension == 'high' ? 'high' : 'normal');
+            await AudioManager().playBackgroundMusic(storyState.genre);
           }
         } catch (_) {}
       }
@@ -359,7 +350,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
   }
 
   Future<void> _handleChoice(String choice, int choiceIndex) async {
-    await AudioManager().playMomentSfx('choice');
+    await AudioManager().playSoundEffect('audio/sfx_choice.mp3');
     final storyState = ref.read(storyProvider);
     final notifier = ref.read(storyProvider.notifier);
 
@@ -505,15 +496,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
             mood: _currentMood,
             child: const SizedBox.expand(),
           ),
-          MoodOverlay(
-            mood: switch (_currentMood) {
-              'calm' => 'low',
-              'tense' => 'high',
-              _ => 'medium',
-            },
-            genre: storyState.genre,
-            child: const SizedBox.expand(),
-          ),
           if (_isTransitioning)
             AnimatedOpacity(
               opacity: _isTransitioning ? 1.0 : 0.0,
@@ -524,15 +506,17 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
             child: Column(
               children: [
                 _buildTopBar(context, storyState, accent),
-                if (storyState.mode == 'rpg' && storyState.rpgState != null)
-                  AnimatedStatHud(
-                      rpgState: storyState.rpgState!, accent: accent),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: NarrativeContainer(
-                      genre: storyState.genre,
-                      isStreaming: _isStreaming,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: LoreforgeColors.surface.withValues(alpha: 0.82),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: GenreTheme.borderColor(storyState.genre),
+                        ),
+                      ),
                       child: SingleChildScrollView(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(24),
@@ -849,15 +833,6 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
           const SizedBox(width: 8),
           Text(
             sceneLabel,
-            style: const TextStyle(
-              color: LoreforgeColors.textDim,
-              fontSize: 11,
-              fontFamily: 'monospace',
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            TokenTracker().formattedCost,
             style: const TextStyle(
               color: LoreforgeColors.textDim,
               fontSize: 11,

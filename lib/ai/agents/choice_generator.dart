@@ -30,7 +30,7 @@ class ChoiceGenerator extends AIAgent {
   Future<List<String>> generateChoices(
       StoryState state, String narrative) async {
     final prompt = _buildPrompt(state, narrative);
-    final response = await generate(prompt, maxTokens: 512);
+    final response = await generate(prompt);
     return _parseChoices(response);
   }
 

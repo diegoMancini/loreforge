@@ -28,7 +28,7 @@ class StoryDirector extends AIAgent {
   /// Returns an empty map on parse failure so callers can apply defaults.
   Future<Map<String, dynamic>> planScene(StoryState state) async {
     final prompt = _buildPrompt(state);
-    final response = await generate(prompt, maxTokens: 512);
+    final response = await generate(prompt);
     return AIJsonParser.parseMap(response);
   }
 

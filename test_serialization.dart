@@ -3,12 +3,15 @@ import 'package:loreforge/models/session_zero.dart';
 import 'package:loreforge/models/rpg_state.dart';
 import 'package:loreforge/models/twist_state.dart';
 
+/// Manual serialization smoke-test — run with `dart run test_serialization.dart`.
+///
+/// Not part of the automated test suite; this file verifies JSON round-trips
+/// work for the core data models without requiring a full Flutter test harness.
 void main() {
-  // Test JSON serialization
+  // Build initial objects
   final rpgState = RPGState.initial();
   final storyState = StoryState.initial().copyWith(
     genre: 'fantasy',
-    mode: 'rpg',
     rpgState: rpgState,
   );
   final sessionZero = SessionZero.initial().copyWith(
@@ -16,7 +19,7 @@ void main() {
     tone: 'epic',
   );
   final twistState = TwistState.initial().copyWith(
-    seeds: ['betrayal'],
+    seeds: ['betrayal', 'hidden identity'],
     twistCount: 1,
   );
 
@@ -25,11 +28,8 @@ void main() {
   final sessionJson = sessionZero.toJson();
   final twistJson = twistState.toJson();
 
-  // ignore: avoid_print
   print('Story JSON: $storyJson');
-  // ignore: avoid_print
   print('Session JSON: $sessionJson');
-  // ignore: avoid_print
   print('Twist JSON: $twistJson');
 
   // Test deserialization
@@ -37,13 +37,10 @@ void main() {
   final sessionFromJson = SessionZero.fromJson(sessionJson);
   final twistFromJson = TwistState.fromJson(twistJson);
 
-  // ignore: avoid_print
   print('Deserialized story genre: ${storyFromJson.genre}');
-  // ignore: avoid_print
   print('Deserialized session genre: ${sessionFromJson.genre}');
-  // ignore: avoid_print
+  print('Deserialized twist count: ${twistFromJson.twistCount}');
   print('Deserialized twist seeds: ${twistFromJson.seeds}');
 
-  // ignore: avoid_print
   print('JSON serialization test passed!');
 }

@@ -6,7 +6,6 @@ import 'package:loreforge/ai/agents/consistency_auditor.dart';
 import 'package:loreforge/ai/agents/visual_director.dart';
 import 'package:loreforge/ai/agents/world_state_manager.dart';
 import 'package:loreforge/ai/providers/base_provider.dart';
-import 'package:loreforge/ai/providers/anthropic_provider.dart';
 import 'package:loreforge/ai/providers/mock_provider.dart';
 import 'package:loreforge/ai/story_context_manager.dart';
 import 'package:loreforge/models/scene.dart';
@@ -32,10 +31,9 @@ class AIClient {
   }
 
   AIClient._internal() {
-    // Use the real Anthropic API when an API key is available (via --dart-define),
-    // fall back to MockProvider for tests and offline dev.
-    const apiKey = String.fromEnvironment('ANTHROPIC_API_KEY');
-    _provider = apiKey.isNotEmpty ? AnthropicProvider(apiKey) : MockProvider();
+    // Use MockProvider for development. Swap for a real provider (e.g.
+    // DeepSeekProvider) when an API key is available via --dart-define.
+    _provider = MockProvider();
     _storyArchitect = StoryArchitect(_provider);
     _storyDirector = StoryDirector(_provider);
     _sceneWriter = SceneWriter(_provider);
