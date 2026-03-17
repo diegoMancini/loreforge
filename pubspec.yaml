@@ -35,6 +35,7 @@ dependencies:
   flame: ^1.18.0
 
   # State management
+  flutter_riverpod: ^2.5.1
   riverpod: ^2.5.1
   flutter_riverpod: ^2.5.1
   freezed_annotation: ^2.4.4

@@ -2,17 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:loreforge/main.dart';
+import 'package:loreforge/screens/main_menu_screen.dart';
 
 void main() {
-  testWidgets('Main menu screen renders Loreforge title', (WidgetTester tester) async {
-    // Build the app and trigger a frame.
-    await tester.pumpWidget(const ProviderScope(child: MyApp()));
+  testWidgets('MainMenuScreen renders title and core buttons', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: MainMenuScreen(),
+        ),
+      ),
+    );
 
-    // The main menu should show the app title.
-    expect(find.text('Loreforge'), findsOneWidget);
+    // Title is present.
+    expect(find.text('LOREFORGE'), findsOneWidget);
 
-    // The new adventure button should be present.
+    // Primary CTA is present.
     expect(find.text('New Adventure'), findsOneWidget);
+
+    // Continue button is present.
+    expect(find.text('Continue Adventure'), findsOneWidget);
+
+    // Settings link is present.
+    expect(find.text('Settings'), findsOneWidget);
+
+    // Redundant "Load Game" button must NOT be present.
+    expect(find.text('Load Game'), findsNothing);
   });
 }
