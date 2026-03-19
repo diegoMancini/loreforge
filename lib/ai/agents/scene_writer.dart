@@ -77,6 +77,9 @@ class SceneWriter extends AIAgent {
     buffer.writeln('Craft focus: ${rules['craft_focus']}');
     buffer.writeln();
 
+    // --- Player creative direction ---
+    _appendPlayerContext(buffer, state);
+
     // --- Story context (token-safe) ---
     buffer.writeln('STORY CONTEXT');
     if (state.storySummary.isNotEmpty) {
@@ -144,6 +147,9 @@ class SceneWriter extends AIAgent {
     buffer.writeln('Session tone: $tone');
     buffer.writeln('Craft focus: ${rules['craft_focus']}');
     buffer.writeln();
+
+    // --- Player creative direction ---
+    _appendPlayerContext(buffer, state);
 
     // --- Blueprint node context ---
     buffer.writeln('BLUEPRINT NODE');
@@ -232,6 +238,63 @@ class SceneWriter extends AIAgent {
         buffer.writeln('Inventory: ${rpg.inventory.join(', ')}');
       }
     }
+  }
+
+  /// Injects player's creative direction: subgenre, custom prompt, media
+  /// inspiration, and recent skill check results.
+  void _appendPlayerContext(StringBuffer buffer, StoryState state) {
+    final subgenre = state.worldState['_subgenre'] as String? ?? '';
+    final customPrompt = state.worldState['_customPrompt'] as String? ?? '';
+    final mediaRaw = state.worldState['_mediaInspiration'];
+    final mediaInspiration = mediaRaw is List ? mediaRaw.cast<String>() : <String>[];
+    final favoriteStories = state.worldState['_favoriteStories'];
+    final favorites = favoriteStories is List ? favoriteStories.cast<String>() : <String>[];
+    final lastCheckNarrative = state.worldState['_lastCheckNarrative'] as String?;
+    final lastCheckSuccess = state.worldState['_lastCheckSuccess'] as bool?;
+    final twistActive = state.worldState['_twistActive'] as bool? ?? false;
+    final twistType = state.worldState['_twistType'] as String?;
+
+    final hasAny = subgenre.isNotEmpty ||
+        customPrompt.isNotEmpty ||
+        mediaInspiration.isNotEmpty ||
+        favorites.isNotEmpty ||
+        lastCheckNarrative != null ||
+        twistActive;
+
+    if (!hasAny) return;
+
+    buffer.writeln('PLAYER CREATIVE DIRECTION');
+    if (subgenre.isNotEmpty) {
+      buffer.writeln('Subgenre: $subgenre — lean into this subgenre\'s conventions.');
+    }
+    if (customPrompt.isNotEmpty) {
+      buffer.writeln('Player\'s instructions: $customPrompt');
+    }
+    if (mediaInspiration.isNotEmpty) {
+      buffer.writeln(
+          'Draw tonal inspiration from: ${mediaInspiration.join(', ')}');
+    }
+    if (favorites.isNotEmpty) {
+      buffer.writeln(
+          'Additional inspirations: ${favorites.join(', ')}');
+    }
+    if (lastCheckNarrative != null) {
+      buffer.writeln();
+      buffer.writeln('RECENT SKILL CHECK');
+      buffer.writeln(lastCheckNarrative);
+      if (lastCheckSuccess == true) {
+        buffer.writeln('The character succeeded — reflect this in the narrative with confidence and progress.');
+      } else if (lastCheckSuccess == false) {
+        buffer.writeln('The character failed — reflect this in the narrative with setback and consequence.');
+      }
+    }
+    if (twistActive && twistType != null) {
+      buffer.writeln();
+      buffer.writeln('PLOT TWIST ACTIVE');
+      buffer.writeln('Twist type: $twistType');
+      buffer.writeln('Weave this twist naturally into the scene. Do not announce it — let the reader discover it through events and details.');
+    }
+    buffer.writeln();
   }
 
   void _appendPureStoryInstructions(StringBuffer buffer) {

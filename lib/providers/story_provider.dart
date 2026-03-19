@@ -62,6 +62,9 @@ class StoryNotifier extends StateNotifier<StoryState> {
       '_language': config.language,
       '_twistsEnabled': config.twistsEnabled,
       '_favoriteStories': config.favoriteStories,
+      '_subgenre': config.subgenre,
+      '_customPrompt': config.customPrompt,
+      '_mediaInspiration': config.mediaInspiration,
     };
 
     state = StoryState.initial().copyWith(
