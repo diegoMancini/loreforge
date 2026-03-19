@@ -3,12 +3,104 @@ import '../models/rpg_state.dart';
 
 /// Lightweight RPG rules engine.
 ///
-/// Handles d20-style skill checks, stat lookups, and outcome application.
+/// Handles d20-style skill checks, stat lookups, outcome application,
+/// smart stat inference, and dynamic DC scaling.
 /// All methods are static so callers do not need to hold an instance.
 class RPGEngine {
   RPGEngine._();
 
   static final _rng = Random();
+
+  // ---------------------------------------------------------------------------
+  // Stat inference
+  // ---------------------------------------------------------------------------
+
+  /// Infers which stat a choice tests based on keyword analysis of the choice
+  /// text and the surrounding narrative context.
+  ///
+  /// Keyword groups (case-insensitive, matched against the concatenation of
+  /// [choiceText] and [narrative]):
+  /// - strength    : fight, attack, climb, break, lift, slam, push, force
+  /// - agility     : dodge, sneak, balance, tumble, sprint, leap, duck, hide
+  /// - intelligence: puzzle, decipher, analyze, study, research, examine, read, solve
+  /// - charisma    : persuade, negotiate, charm, bluff, lie, intimidate, seduce, flatter
+  /// - perception  : search, listen, notice, spot, watch, sense, detect, observe
+  /// - willpower   : resist, endure, confront, withstand, focus, meditate, will
+  ///
+  /// Falls back to a weighted random selection if no keyword matches.
+  static String inferStatForChoice(String choiceText, String narrative) {
+    final combined = '${choiceText.toLowerCase()} ${narrative.toLowerCase()}';
+
+    // Each entry: stat name → list of trigger keywords.
+    const keywordMap = <String, List<String>>{
+      'strength':     ['fight', 'attack', 'climb', 'break', 'lift', 'slam', 'push', 'force'],
+      'agility':      ['dodge', 'sneak', 'balance', 'tumble', 'sprint', 'leap', 'duck', 'hide'],
+      'intelligence': ['puzzle', 'decipher', 'analyze', 'study', 'research', 'examine', 'read', 'solve'],
+      'charisma':     ['persuade', 'negotiate', 'charm', 'bluff', 'lie', 'intimidate', 'seduce', 'flatter'],
+      'perception':   ['search', 'listen', 'notice', 'spot', 'watch', 'sense', 'detect', 'observe'],
+      'willpower':    ['resist', 'endure', 'confront', 'withstand', 'focus', 'meditate', 'will'],
+    };
+
+    // Track match counts per stat so the strongest signal wins.
+    final scores = <String, int>{};
+    for (final entry in keywordMap.entries) {
+      int count = 0;
+      for (final kw in entry.value) {
+        // Use word-boundary-style matching: check for the keyword as a
+        // substring to keep it simple and allocation-free.
+        if (combined.contains(kw)) count++;
+      }
+      if (count > 0) scores[entry.key] = count;
+    }
+
+    if (scores.isNotEmpty) {
+      // Return the stat with the highest keyword hit count.
+      return scores.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+    }
+
+    // No keyword matched — fall back to a weighted random selection.
+    // Weights reflect how commonly each stat appears in generic narrative.
+    const weighted = [
+      'strength',     'strength',
+      'agility',      'agility',
+      'intelligence', 'intelligence',
+      'charisma',     'charisma',
+      'perception',   'perception',
+      'willpower',
+    ];
+    return weighted[_rng.nextInt(weighted.length)];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dynamic DC scaling
+  // ---------------------------------------------------------------------------
+
+  /// Calculates a difficulty class that grows with story progression.
+  ///
+  /// Base DC is 10. Each 3 scenes completed adds +1. Node-type bonuses:
+  /// - 'twist'      : +2
+  /// - 'climax'     : +3
+  /// - 'resolution' : +1
+  ///
+  /// Result is clamped to [8, 20].
+  static int scaleDC(int sceneNumber, {String? nodeType}) {
+    int dc = 10;
+    dc += (sceneNumber ~/ 3); // +1 per 3 scenes completed
+
+    switch (nodeType) {
+      case 'twist':
+        dc += 2;
+        break;
+      case 'climax':
+        dc += 3;
+        break;
+      case 'resolution':
+        dc += 1;
+        break;
+    }
+
+    return dc.clamp(8, 20);
+  }
 
   // ---------------------------------------------------------------------------
   // Stat helpers
@@ -91,29 +183,49 @@ class RPGEngine {
 
   /// Applies a [SkillCheckResult] to [current] RPG state.
   ///
-  /// - [itemsGained]: items to add to inventory on success.
-  /// - Stat deltas (nat 20 / nat 1) are applied with a floor of 1.
-  /// - Score increases by 10 on success, decreases by 5 on failure (min 0).
+  /// Score deltas:
+  /// - Critical success (roll == 20) : +25
+  /// - Normal success                : +10
+  /// - Normal failure                : -5
+  /// - Critical failure  (roll == 1) : -10
+  ///
+  /// Stat deltas (already set in [SkillCheckResult] by [performCheck]):
+  /// - roll == 20 → statDelta +1 (applied regardless)
+  /// - roll == 1  → statDelta -1 (applied regardless)
+  ///
+  /// Items in [itemsGained] are added to inventory on any success (normal or
+  /// critical).
   static RPGState applyOutcome({
     required RPGState current,
     required SkillCheckResult result,
     required List<String> itemsGained,
   }) {
-    // Update inventory.
+    // Inventory: grant items on any success.
     final newInventory = result.success && itemsGained.isNotEmpty
         ? [...current.inventory, ...itemsGained]
         : List<String>.from(current.inventory);
 
-    // Update score.
-    final scoreDelta = result.success ? 10 : -5;
+    // Score delta depends on whether the roll was a critical.
+    final int scoreDelta;
+    if (result.roll == 20) {
+      scoreDelta = 25; // critical success
+    } else if (result.roll == 1) {
+      scoreDelta = -10; // critical failure
+    } else if (result.success) {
+      scoreDelta = 10; // normal success
+    } else {
+      scoreDelta = -5; // normal failure
+    }
+
     final newScore = (current.score + scoreDelta).clamp(0, 9999);
 
-    // Apply stat delta.
+    // Apply score and inventory first.
     RPGState updated = current.copyWith(
       inventory: newInventory,
       score: newScore,
     );
 
+    // Apply permanent stat delta (nat 20 / nat 1 always carry a stat change).
     if (result.statDelta != 0) {
       updated = _applyStatDelta(updated, result.stat, result.statDelta);
     }
