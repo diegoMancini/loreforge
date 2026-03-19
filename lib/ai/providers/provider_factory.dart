@@ -1,3 +1,4 @@
+import 'package:loreforge/config/env_config.dart';
 import 'base_provider.dart';
 import 'anthropic_provider.dart';
 import 'openai_provider.dart';
@@ -9,6 +10,7 @@ import 'provider_router.dart';
 ///
 /// Called when starting a new adventure — reads keys from the settings
 /// model and creates provider instances for each configured service.
+/// Falls back to [EnvConfig.anthropicApiKey] if no key is provided.
 ProviderRouter createRouter({
   String? anthropicKey,
   String? openaiKey,
@@ -17,8 +19,13 @@ ProviderRouter createRouter({
 }) {
   final providers = <String, AIProvider>{};
 
-  if (anthropicKey != null && anthropicKey.isNotEmpty) {
-    providers['anthropic'] = AnthropicProvider(anthropicKey);
+  // Use provided key, or fall back to compile-time env key
+  final effectiveAnthropicKey = (anthropicKey != null && anthropicKey.isNotEmpty)
+      ? anthropicKey
+      : (EnvConfig.anthropicApiKey.isNotEmpty ? EnvConfig.anthropicApiKey : null);
+
+  if (effectiveAnthropicKey != null) {
+    providers['anthropic'] = AnthropicProvider(effectiveAnthropicKey);
   }
   if (openaiKey != null && openaiKey.isNotEmpty) {
     providers['openai'] = OpenAIProvider(openaiKey);

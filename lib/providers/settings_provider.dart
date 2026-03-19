@@ -25,10 +25,12 @@ class AppSettings {
   final String preferredProvider;
 
   /// Whether at least one real API key is configured.
+  /// Whether at least one real API key is configured (from settings or env).
   bool get hasAnyApiKey =>
       (anthropicApiKey?.isNotEmpty ?? false) ||
       (openaiApiKey?.isNotEmpty ?? false) ||
-      (deepseekApiKey?.isNotEmpty ?? false);
+      (deepseekApiKey?.isNotEmpty ?? false) ||
+      EnvConfig.anthropicApiKey.isNotEmpty;
 
   AppSettings copyWith({
     double? textSize,
