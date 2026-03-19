@@ -5,68 +5,90 @@ import 'package:loreforge/ai/agents/choice_generator.dart';
 import 'package:loreforge/ai/agents/consistency_auditor.dart';
 import 'package:loreforge/ai/agents/visual_director.dart';
 import 'package:loreforge/ai/agents/world_state_manager.dart';
-import 'package:loreforge/ai/providers/base_provider.dart';
 import 'package:loreforge/ai/providers/mock_provider.dart';
+import 'package:loreforge/ai/providers/provider_router.dart';
 import 'package:loreforge/ai/story_context_manager.dart';
 import 'package:loreforge/models/scene.dart';
 import 'package:loreforge/models/story_blueprint.dart';
 import 'package:loreforge/models/story_state.dart';
 
-/// Singleton facade over all AI agents and providers.
+/// Facade over all AI agents, backed by a [ProviderRouter] that routes
+/// each task to the best available LLM provider.
 ///
-/// Using a singleton ensures that agent instances (and their internal state /
-/// caches) are shared across the entire app lifetime rather than being
-/// recreated on every call-site. Callers obtain the instance via the
-/// [AIClient()] factory constructor.
+/// Call [AIClient.initialize] once when starting a new adventure (after
+/// the user has configured API keys). Use [AIClient.instance] everywhere
+/// else. Falls back to [MockProvider] when no router is configured.
 class AIClient {
   // ---------------------------------------------------------------------------
-  // Singleton plumbing
+  // Lifecycle
   // ---------------------------------------------------------------------------
 
-  static AIClient? _instance;
+  static AIClient? _current;
 
-  factory AIClient() {
-    _instance ??= AIClient._internal();
-    return _instance!;
+  /// Create a new [AIClient] wired to [router].
+  ///
+  /// Replaces any previously initialised instance.
+  static void initialize(ProviderRouter router) {
+    _current = AIClient._(router);
   }
 
-  AIClient._internal() {
-    // Use MockProvider for development. Swap for a real provider (e.g.
-    // DeepSeekProvider) when an API key is available via --dart-define.
-    _provider = MockProvider();
-    _storyArchitect = StoryArchitect(_provider);
-    _storyDirector = StoryDirector(_provider);
-    _sceneWriter = SceneWriter(_provider);
-    _choiceGenerator = ChoiceGenerator(_provider);
-    _consistencyAuditor = ConsistencyAuditor(_provider);
-    _visualDirector = VisualDirector(_provider);
-    _worldStateManager = WorldStateManager(_provider);
-    _storyContextManager = StoryContextManager();
+  /// Returns the current instance.
+  ///
+  /// If [initialize] has not been called, creates a fallback instance with
+  /// [MockProvider] so the app never crashes during development.
+  static AIClient get instance {
+    if (_current == null) {
+      final fallback = ProviderRouter(
+        {'mock': MockProvider()},
+        preferred: 'mock',
+      );
+      _current = AIClient._(fallback);
+    }
+    return _current!;
   }
+
+  /// Legacy factory constructor — returns [instance] for backwards compat.
+  factory AIClient() => instance;
+
+  AIClient._(ProviderRouter router)
+      : _router = router,
+        _storyArchitect =
+            StoryArchitect(router.providerFor(AITask.blueprintGeneration)),
+        _storyDirector =
+            StoryDirector(router.providerFor(AITask.pacingAnalysis)),
+        _sceneWriter =
+            SceneWriter(router.providerFor(AITask.sceneWriting)),
+        _choiceGenerator =
+            ChoiceGenerator(router.providerFor(AITask.choiceGeneration)),
+        _consistencyAuditor =
+            ConsistencyAuditor(router.providerFor(AITask.consistencyCheck)),
+        _visualDirector =
+            VisualDirector(router.providerFor(AITask.visualDirection)),
+        _worldStateManager =
+            WorldStateManager(router.providerFor(AITask.worldStateUpdate)),
+        _storyContextManager = StoryContextManager();
 
   // ---------------------------------------------------------------------------
   // Fields
   // ---------------------------------------------------------------------------
 
-  late final AIProvider _provider;
-  late final StoryArchitect _storyArchitect;
-  late final StoryDirector _storyDirector;
-  late final SceneWriter _sceneWriter;
-  late final ChoiceGenerator _choiceGenerator;
-  late final ConsistencyAuditor _consistencyAuditor;
-  late final VisualDirector _visualDirector;
   // ignore: unused_field
-  late final WorldStateManager _worldStateManager;
-  late final StoryContextManager _storyContextManager;
+  final ProviderRouter _router;
+  final StoryArchitect _storyArchitect;
+  final StoryDirector _storyDirector;
+  final SceneWriter _sceneWriter;
+  final ChoiceGenerator _choiceGenerator;
+  final ConsistencyAuditor _consistencyAuditor;
+  final VisualDirector _visualDirector;
+  // ignore: unused_field
+  final WorldStateManager _worldStateManager;
+  final StoryContextManager _storyContextManager;
 
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
   /// Generates a complete [StoryBlueprint] before gameplay begins.
-  ///
-  /// The architect reads tone, language, and twist preferences from
-  /// [state.worldState] (keys: `_tone`, `_language`, `_twistsEnabled`).
   Future<StoryBlueprint> generateBlueprint(StoryState state) async {
     return _storyArchitect.generateBlueprint(state);
   }
@@ -81,22 +103,28 @@ class AIClient {
   }
 
   /// Generates a fully assembled [Scene] synchronously (non-streaming).
-  ///
-  /// Runs the director → writer → choice-generator → auditor → visual pipeline.
   Future<Scene> generateScene(StoryState state) async {
     final narrative = await _sceneWriter.writeScene(state);
     final choices = await _choiceGenerator.generateChoices(state, narrative);
 
-    // Consistency Auditor validates
     final isConsistent =
         await _consistencyAuditor.validateScene(state, narrative, choices);
     if (!isConsistent) {
-      // TODO(ws2): implement retry / fallback in Workstream 2
+      // Regenerate once on validation failure.
+      final retryNarrative = await _sceneWriter.writeScene(state);
+      final retryChoices =
+          await _choiceGenerator.generateChoices(state, retryNarrative);
+      final visualAssets =
+          await _visualDirector.selectAssets(state, retryNarrative);
+      return Scene(
+        narrative: retryNarrative,
+        choices: retryChoices,
+        background: visualAssets.background,
+        sprites: visualAssets.sprites,
+      );
     }
 
-    // Visual Director selects assets
     final visualAssets = await _visualDirector.selectAssets(state, narrative);
-
     return Scene(
       narrative: narrative,
       choices: choices,
@@ -106,16 +134,11 @@ class AIClient {
   }
 
   /// Returns a stream of narrative text tokens for the current scene.
-  ///
-  /// [blueprintNode] is optional — when provided its summary is injected into
-  /// the state's worldState as `_currentBeat` so the SceneWriter prompt gains
-  /// structural guidance without requiring a signature change on the agent.
   Future<Stream<String>> generateSceneStream(
     StoryState state, {
     BlueprintNode? blueprintNode,
     Map<String, dynamic>? directorGuidance,
   }) async {
-    // Inject blueprint beat hint into a transient worldState copy
     final enrichedState = blueprintNode != null
         ? state.copyWith(
             worldState: {
@@ -141,10 +164,6 @@ class AIClient {
   }
 
   /// Builds an updated context summary for the story so far.
-  ///
-  /// Delegates to [StoryContextManager.updateSummary] which returns a map
-  /// containing `_summary`, `_recentScenes`, `_characters`, and `_threads`.
-  /// Callers should merge this into [StoryState.worldState] via `copyWith`.
   Future<Map<String, dynamic>> summarizeScene(
     StoryState state,
     String narrative,

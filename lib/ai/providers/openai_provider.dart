@@ -4,13 +4,14 @@ import 'base_provider.dart';
 import 'anthropic_provider.dart' show HttpProviderException;
 import 'sse_parser.dart';
 
-/// DeepSeek provider (OpenAI-compatible API).
-class DeepSeekProvider implements AIProvider {
+/// OpenAI GPT provider.
+class OpenAIProvider implements AIProvider {
   final String apiKey;
+  final String model;
 
-  DeepSeekProvider(this.apiKey);
+  OpenAIProvider(this.apiKey, {this.model = 'gpt-4o'});
 
-  static const _baseUrl = 'https://api.deepseek.com/v1/chat/completions';
+  static const _baseUrl = 'https://api.openai.com/v1/chat/completions';
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -18,7 +19,7 @@ class DeepSeekProvider implements AIProvider {
       };
 
   @override
-  String get name => 'deepseek';
+  String get name => 'openai';
 
   @override
   Future<String> generate(String prompt) async {
@@ -27,7 +28,7 @@ class DeepSeekProvider implements AIProvider {
           Uri.parse(_baseUrl),
           headers: _headers,
           body: jsonEncode({
-            'model': 'deepseek-chat',
+            'model': model,
             'messages': [
               {'role': 'user', 'content': prompt}
             ],
@@ -37,7 +38,8 @@ class DeepSeekProvider implements AIProvider {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data['choices'][0]['message']['content'] as String;
+      final choices = data['choices'] as List<dynamic>;
+      return choices.first['message']['content'] as String;
     }
     throw HttpProviderException(response.statusCode, response.body, name);
   }
@@ -47,7 +49,7 @@ class DeepSeekProvider implements AIProvider {
     final request = http.Request('POST', Uri.parse(_baseUrl));
     request.headers.addAll(_headers);
     request.body = jsonEncode({
-      'model': 'deepseek-chat',
+      'model': model,
       'stream': true,
       'messages': [
         {'role': 'user', 'content': prompt}
@@ -64,7 +66,7 @@ class DeepSeekProvider implements AIProvider {
       throw HttpProviderException(streamedResponse.statusCode, body, name);
     }
 
-    // DeepSeek uses OpenAI-compatible SSE format.
+    // OpenAI SSE: {"choices":[{"delta":{"content":"..."}}]}
     return parseSSE(streamedResponse.stream, (json) {
       final choices = json['choices'] as List<dynamic>?;
       if (choices == null || choices.isEmpty) return null;
@@ -77,16 +79,9 @@ class DeepSeekProvider implements AIProvider {
   Future<bool> validateKey() async {
     try {
       final response = await http
-          .post(
-            Uri.parse(_baseUrl),
-            headers: _headers,
-            body: jsonEncode({
-              'model': 'deepseek-chat',
-              'max_tokens': 1,
-              'messages': [
-                {'role': 'user', 'content': 'Hi'}
-              ],
-            }),
+          .get(
+            Uri.parse('https://api.openai.com/v1/models'),
+            headers: {'Authorization': 'Bearer $apiKey'},
           )
           .timeout(const Duration(seconds: 15));
       return response.statusCode == 200;

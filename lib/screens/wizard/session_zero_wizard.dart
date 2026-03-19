@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../ai/ai_client.dart';
+import '../../ai/providers/provider_factory.dart';
 import '../../providers/session_zero_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/loreforge_theme.dart';
 import '../../widgets/atmosphere_background.dart';
 import 'language_step.dart';
@@ -93,8 +96,50 @@ class _SessionZeroWizardState extends ConsumerState<SessionZeroWizard>
       setState(() => _currentStep++);
       _slideController.forward();
     } else {
-      _completeWizard();
+      final settings = ref.read(settingsProvider);
+      if (!settings.hasAnyApiKey) {
+        _showApiKeyPrompt();
+      } else {
+        _completeWizard();
+      }
     }
+  }
+
+  void _showApiKeyPrompt() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('API Key Required',
+            style: TextStyle(color: Colors.white, fontSize: 18)),
+        content: const Text(
+          'To generate real AI-driven stories, you need to add at least '
+          'one API key in Settings (Anthropic, OpenAI, or DeepSeek).\n\n'
+          'You can continue in demo mode, but the narrative will be '
+          'placeholder text.',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop(); // back to main menu
+            },
+            child: const Text('Go to Settings',
+                style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _completeWizard();
+            },
+            child: const Text('Continue in Demo Mode',
+                style: TextStyle(color: Color(0xFFD4A574))),
+          ),
+        ],
+      ),
+    );
   }
 
   void _goBack() {
@@ -107,6 +152,16 @@ class _SessionZeroWizardState extends ConsumerState<SessionZeroWizard>
 
   Future<void> _completeWizard() async {
     setState(() => _isGeneratingBlueprint = true);
+
+    // Initialize AIClient with the user's configured API keys.
+    final settings = ref.read(settingsProvider);
+    final router = createRouter(
+      anthropicKey: settings.anthropicApiKey,
+      openaiKey: settings.openaiApiKey,
+      deepseekKey: settings.deepseekApiKey,
+      preferred: settings.preferredProvider,
+    );
+    AIClient.initialize(router);
 
     // Start blueprint generation (runs in background via provider)
     ref.read(sessionZeroProvider.notifier).complete();

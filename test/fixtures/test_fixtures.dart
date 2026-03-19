@@ -24,6 +24,12 @@ class FakeAIProvider implements AIProvider {
   String? capturedPrompt;
 
   @override
+  String get name => 'fake';
+
+  @override
+  Future<bool> validateKey() async => true;
+
+  @override
   Future<String> generate(String prompt) async {
     capturedPrompt = prompt;
     return nextResponse;

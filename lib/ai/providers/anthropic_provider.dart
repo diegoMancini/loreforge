@@ -1,24 +1,28 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'base_provider.dart';
-import 'anthropic_provider.dart' show HttpProviderException;
 import 'sse_parser.dart';
 
-/// DeepSeek provider (OpenAI-compatible API).
-class DeepSeekProvider implements AIProvider {
+/// Anthropic Claude provider.
+///
+/// Uses the Messages API with streaming support via SSE.
+class AnthropicProvider implements AIProvider {
   final String apiKey;
+  final String model;
 
-  DeepSeekProvider(this.apiKey);
+  AnthropicProvider(this.apiKey, {this.model = 'claude-sonnet-4-20250514'});
 
-  static const _baseUrl = 'https://api.deepseek.com/v1/chat/completions';
+  static const _baseUrl = 'https://api.anthropic.com/v1/messages';
+  static const _version = '2023-06-01';
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $apiKey',
+        'x-api-key': apiKey,
+        'anthropic-version': _version,
       };
 
   @override
-  String get name => 'deepseek';
+  String get name => 'anthropic';
 
   @override
   Future<String> generate(String prompt) async {
@@ -27,7 +31,8 @@ class DeepSeekProvider implements AIProvider {
           Uri.parse(_baseUrl),
           headers: _headers,
           body: jsonEncode({
-            'model': 'deepseek-chat',
+            'model': model,
+            'max_tokens': 1024,
             'messages': [
               {'role': 'user', 'content': prompt}
             ],
@@ -37,7 +42,8 @@ class DeepSeekProvider implements AIProvider {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data['choices'][0]['message']['content'] as String;
+      final content = data['content'] as List<dynamic>;
+      return content.first['text'] as String;
     }
     throw HttpProviderException(response.statusCode, response.body, name);
   }
@@ -47,7 +53,8 @@ class DeepSeekProvider implements AIProvider {
     final request = http.Request('POST', Uri.parse(_baseUrl));
     request.headers.addAll(_headers);
     request.body = jsonEncode({
-      'model': 'deepseek-chat',
+      'model': model,
+      'max_tokens': 1024,
       'stream': true,
       'messages': [
         {'role': 'user', 'content': prompt}
@@ -64,12 +71,14 @@ class DeepSeekProvider implements AIProvider {
       throw HttpProviderException(streamedResponse.statusCode, body, name);
     }
 
-    // DeepSeek uses OpenAI-compatible SSE format.
+    // Anthropic SSE: content_block_delta events contain {"delta": {"text": "..."}}
     return parseSSE(streamedResponse.stream, (json) {
-      final choices = json['choices'] as List<dynamic>?;
-      if (choices == null || choices.isEmpty) return null;
-      final delta = choices.first['delta'] as Map<String, dynamic>?;
-      return delta?['content'] as String?;
+      final type = json['type'] as String?;
+      if (type == 'content_block_delta') {
+        final delta = json['delta'] as Map<String, dynamic>?;
+        return delta?['text'] as String?;
+      }
+      return null;
     });
   }
 
@@ -81,7 +90,7 @@ class DeepSeekProvider implements AIProvider {
             Uri.parse(_baseUrl),
             headers: _headers,
             body: jsonEncode({
-              'model': 'deepseek-chat',
+              'model': model,
               'max_tokens': 1,
               'messages': [
                 {'role': 'user', 'content': 'Hi'}
@@ -94,4 +103,21 @@ class DeepSeekProvider implements AIProvider {
       return false;
     }
   }
+}
+
+/// Thrown when an AI provider returns a non-success HTTP status.
+class HttpProviderException implements Exception {
+  final int statusCode;
+  final String body;
+  final String provider;
+  HttpProviderException(this.statusCode, this.body, this.provider);
+
+  bool get isAuth => statusCode == 401 || statusCode == 403;
+  bool get isRateLimit => statusCode == 429;
+  bool get isServer =>
+      statusCode == 500 || statusCode == 502 || statusCode == 503;
+  bool get isRetryable => isRateLimit || isServer;
+
+  @override
+  String toString() => '$provider API error $statusCode: $body';
 }
