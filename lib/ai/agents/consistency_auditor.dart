@@ -6,8 +6,8 @@ class ConsistencyAuditor extends AIAgent {
 
   Future<bool> validateScene(StoryState state, String narrative, List<String> choices) async {
     final prompt = _buildPrompt(state, narrative, choices);
-    final response = await generate(prompt);
-    // Parse validation result
+    await generate(prompt);
+    // TODO: Parse validation result from AI response
     return true; // Mock - would check for consistency
   }
 

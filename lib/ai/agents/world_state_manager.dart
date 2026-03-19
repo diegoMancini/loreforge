@@ -10,8 +10,8 @@ class WorldStateManager extends AIAgent {
     String aiResponse,
   ) async {
     final prompt = _buildPrompt(currentState, playerChoice, aiResponse);
-    final response = await generate(prompt);
-    // Parse and validate world state changes
+    await generate(prompt);
+    // TODO: Parse and validate world state changes from AI response
     return {}; // Mock - would parse JSON response
   }
 

@@ -21,11 +21,11 @@ import '../providers/settings_provider.dart';
 /// Strip markdown formatting (bold, italic, headers) from AI output.
 String _stripMarkdown(String text) {
   return text
-      .replaceAllMapped(RegExp(r'\*\*(.+?)\*\*'), (m) => m[1]!) // **bold**
-      .replaceAllMapped(RegExp(r'\*(.+?)\*'), (m) => m[1]!) // *italic*
-      .replaceAllMapped(RegExp(r'_(.+?)_'), (m) => m[1]!) // _italic_
+      .replaceAllMapped(RegExp(r'\*\*(.+?)\*\*'), (m) => m[1] ?? '') // **bold**
+      .replaceAllMapped(RegExp(r'\*(.+?)\*'), (m) => m[1] ?? '') // *italic*
+      .replaceAllMapped(RegExp(r'_(.+?)_'), (m) => m[1] ?? '') // _italic_
       .replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '') // # headers
-      .replaceAllMapped(RegExp(r'`(.+?)`'), (m) => m[1]!); // `code`
+      .replaceAllMapped(RegExp(r'`(.+?)`'), (m) => m[1] ?? ''); // `code`
 }
 
 // ---------------------------------------------------------------------------
@@ -997,6 +997,7 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
     }
   }
 
+  // ignore: unused_element
   Future<void> _loadGame() async {
     try {
       final loadedStory = await SaveManager.loadStory();

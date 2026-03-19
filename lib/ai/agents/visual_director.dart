@@ -6,8 +6,8 @@ class VisualDirector extends AIAgent {
 
   Future<VisualAssets> selectAssets(StoryState state, String narrative) async {
     final prompt = _buildPrompt(state, narrative);
-    final response = await generate(prompt);
-    // Parse response for background and sprites
+    await generate(prompt);
+    // TODO: Parse AI response for background and sprites
     return VisualAssets(
       background: _getBackgroundForGenre(state.genre),
       sprites: _getSpritesForScene(narrative),

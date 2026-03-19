@@ -55,6 +55,7 @@ class AIClient {
   late final ChoiceGenerator _choiceGenerator;
   late final ConsistencyAuditor _consistencyAuditor;
   late final VisualDirector _visualDirector;
+  // ignore: unused_field
   late final WorldStateManager _worldStateManager;
   late final StoryContextManager _storyContextManager;
 
