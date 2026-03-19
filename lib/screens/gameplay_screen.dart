@@ -15,6 +15,7 @@ import '../game/rpg_engine.dart';
 import 'character_sheet_overlay.dart';
 import 'inventory_overlay.dart';
 import 'story_log_overlay.dart';
+import 'timeline_overlay.dart';
 import 'pause_menu_overlay.dart';
 import '../providers/settings_provider.dart';
 
@@ -858,6 +859,14 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
               ),
             ),
           ],
+          _TopBarButton(
+            icon: Icons.account_tree,
+            tooltip: 'Timeline',
+            onPressed: () => showDialog(
+              context: context,
+              builder: (_) => const TimelineOverlay(),
+            ),
+          ),
           _TopBarButton(
             icon: Icons.auto_stories,
             tooltip: 'Story Log',

@@ -31,7 +31,11 @@ class SessionZeroNotifier extends StateNotifier<SessionZero> {
   }
 
   void updateGenre(String genre) {
-    state = state.copyWith(genre: genre);
+    state = state.copyWith(genre: genre, subgenre: '');
+  }
+
+  void updateSubgenre(String subgenre) {
+    state = state.copyWith(subgenre: subgenre);
   }
 
   void updateTone(String tone) {
@@ -45,6 +49,20 @@ class SessionZeroNotifier extends StateNotifier<SessionZero> {
   void removeFavoriteStory(String story) {
     final updated = List<String>.from(state.favoriteStories)..remove(story);
     state = state.copyWith(favoriteStories: updated);
+  }
+
+  void toggleMediaInspiration(String title) {
+    final current = List<String>.from(state.mediaInspiration);
+    if (current.contains(title)) {
+      current.remove(title);
+    } else {
+      current.add(title);
+    }
+    state = state.copyWith(mediaInspiration: current);
+  }
+
+  void updateCustomPrompt(String prompt) {
+    state = state.copyWith(customPrompt: prompt);
   }
 
   void toggleTwists() {

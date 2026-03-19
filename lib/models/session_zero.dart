@@ -10,8 +10,11 @@ class SessionZero with _$SessionZero {
     required String mode, // 'pure_story' or 'rpg'
     required String setupMethod, // 'prompt' or 'questions'
     required String genre,
+    required String subgenre,
     required String tone,
     required List<String> favoriteStories,
+    required List<String> mediaInspiration,
+    required String customPrompt,
     required bool twistsEnabled,
   }) = _SessionZero;
 
@@ -20,8 +23,11 @@ class SessionZero with _$SessionZero {
         mode: 'pure_story',
         setupMethod: 'questions',
         genre: 'Fantasy',
+        subgenre: '',
         tone: 'epic',
         favoriteStories: [],
+        mediaInspiration: [],
+        customPrompt: '',
         twistsEnabled: true,
       );
 

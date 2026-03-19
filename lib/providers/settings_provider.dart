@@ -1,5 +1,6 @@
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/env_config.dart';
 
 /// Immutable application settings model.
 class AppSettings {
@@ -71,7 +72,8 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       musicVolume: prefs.getDouble('lf_music_vol') ?? 0.7,
       sfxVolume: prefs.getDouble('lf_sfx_vol') ?? 1.0,
       textSpeed: prefs.getDouble('lf_text_speed') ?? 1.0,
-      anthropicApiKey: prefs.getString('lf_anthropic_key'),
+      anthropicApiKey: prefs.getString('lf_anthropic_key')
+          ?? (EnvConfig.anthropicApiKey.isNotEmpty ? EnvConfig.anthropicApiKey : null),
       openaiApiKey: prefs.getString('lf_openai_key'),
       deepseekApiKey: prefs.getString('lf_deepseek_key'),
       preferredProvider: prefs.getString('lf_preferred_provider') ?? 'auto',

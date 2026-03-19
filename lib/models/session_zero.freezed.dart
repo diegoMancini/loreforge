@@ -26,8 +26,11 @@ mixin _$SessionZero {
   String get setupMethod =>
       throw _privateConstructorUsedError; // 'prompt' or 'questions'
   String get genre => throw _privateConstructorUsedError;
+  String get subgenre => throw _privateConstructorUsedError;
   String get tone => throw _privateConstructorUsedError;
   List<String> get favoriteStories => throw _privateConstructorUsedError;
+  List<String> get mediaInspiration => throw _privateConstructorUsedError;
+  String get customPrompt => throw _privateConstructorUsedError;
   bool get twistsEnabled => throw _privateConstructorUsedError;
 
   /// Serializes this SessionZero to a JSON map.
@@ -51,8 +54,11 @@ abstract class $SessionZeroCopyWith<$Res> {
       String mode,
       String setupMethod,
       String genre,
+      String subgenre,
       String tone,
       List<String> favoriteStories,
+      List<String> mediaInspiration,
+      String customPrompt,
       bool twistsEnabled});
 }
 
@@ -75,8 +81,11 @@ class _$SessionZeroCopyWithImpl<$Res, $Val extends SessionZero>
     Object? mode = null,
     Object? setupMethod = null,
     Object? genre = null,
+    Object? subgenre = null,
     Object? tone = null,
     Object? favoriteStories = null,
+    Object? mediaInspiration = null,
+    Object? customPrompt = null,
     Object? twistsEnabled = null,
   }) {
     return _then(_value.copyWith(
@@ -96,6 +105,10 @@ class _$SessionZeroCopyWithImpl<$Res, $Val extends SessionZero>
           ? _value.genre
           : genre // ignore: cast_nullable_to_non_nullable
               as String,
+      subgenre: null == subgenre
+          ? _value.subgenre
+          : subgenre // ignore: cast_nullable_to_non_nullable
+              as String,
       tone: null == tone
           ? _value.tone
           : tone // ignore: cast_nullable_to_non_nullable
@@ -104,6 +117,14 @@ class _$SessionZeroCopyWithImpl<$Res, $Val extends SessionZero>
           ? _value.favoriteStories
           : favoriteStories // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaInspiration: null == mediaInspiration
+          ? _value.mediaInspiration
+          : mediaInspiration // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      customPrompt: null == customPrompt
+          ? _value.customPrompt
+          : customPrompt // ignore: cast_nullable_to_non_nullable
+              as String,
       twistsEnabled: null == twistsEnabled
           ? _value.twistsEnabled
           : twistsEnabled // ignore: cast_nullable_to_non_nullable
@@ -125,8 +146,11 @@ abstract class _$$SessionZeroImplCopyWith<$Res>
       String mode,
       String setupMethod,
       String genre,
+      String subgenre,
       String tone,
       List<String> favoriteStories,
+      List<String> mediaInspiration,
+      String customPrompt,
       bool twistsEnabled});
 }
 
@@ -147,8 +171,11 @@ class __$$SessionZeroImplCopyWithImpl<$Res>
     Object? mode = null,
     Object? setupMethod = null,
     Object? genre = null,
+    Object? subgenre = null,
     Object? tone = null,
     Object? favoriteStories = null,
+    Object? mediaInspiration = null,
+    Object? customPrompt = null,
     Object? twistsEnabled = null,
   }) {
     return _then(_$SessionZeroImpl(
@@ -168,6 +195,10 @@ class __$$SessionZeroImplCopyWithImpl<$Res>
           ? _value.genre
           : genre // ignore: cast_nullable_to_non_nullable
               as String,
+      subgenre: null == subgenre
+          ? _value.subgenre
+          : subgenre // ignore: cast_nullable_to_non_nullable
+              as String,
       tone: null == tone
           ? _value.tone
           : tone // ignore: cast_nullable_to_non_nullable
@@ -176,6 +207,14 @@ class __$$SessionZeroImplCopyWithImpl<$Res>
           ? _value._favoriteStories
           : favoriteStories // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaInspiration: null == mediaInspiration
+          ? _value._mediaInspiration
+          : mediaInspiration // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      customPrompt: null == customPrompt
+          ? _value.customPrompt
+          : customPrompt // ignore: cast_nullable_to_non_nullable
+              as String,
       twistsEnabled: null == twistsEnabled
           ? _value.twistsEnabled
           : twistsEnabled // ignore: cast_nullable_to_non_nullable
@@ -192,10 +231,14 @@ class _$SessionZeroImpl implements _SessionZero {
       required this.mode,
       required this.setupMethod,
       required this.genre,
+      required this.subgenre,
       required this.tone,
       required final List<String> favoriteStories,
+      required final List<String> mediaInspiration,
+      required this.customPrompt,
       required this.twistsEnabled})
-      : _favoriteStories = favoriteStories;
+      : _favoriteStories = favoriteStories,
+        _mediaInspiration = mediaInspiration;
 
   factory _$SessionZeroImpl.fromJson(Map<String, dynamic> json) =>
       _$$SessionZeroImplFromJson(json);
@@ -211,6 +254,8 @@ class _$SessionZeroImpl implements _SessionZero {
   @override
   final String genre;
   @override
+  final String subgenre;
+  @override
   final String tone;
   final List<String> _favoriteStories;
   @override
@@ -220,12 +265,23 @@ class _$SessionZeroImpl implements _SessionZero {
     return EqualUnmodifiableListView(_favoriteStories);
   }
 
+  final List<String> _mediaInspiration;
+  @override
+  List<String> get mediaInspiration {
+    if (_mediaInspiration is EqualUnmodifiableListView)
+      return _mediaInspiration;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mediaInspiration);
+  }
+
+  @override
+  final String customPrompt;
   @override
   final bool twistsEnabled;
 
   @override
   String toString() {
-    return 'SessionZero(language: $language, mode: $mode, setupMethod: $setupMethod, genre: $genre, tone: $tone, favoriteStories: $favoriteStories, twistsEnabled: $twistsEnabled)';
+    return 'SessionZero(language: $language, mode: $mode, setupMethod: $setupMethod, genre: $genre, subgenre: $subgenre, tone: $tone, favoriteStories: $favoriteStories, mediaInspiration: $mediaInspiration, customPrompt: $customPrompt, twistsEnabled: $twistsEnabled)';
   }
 
   @override
@@ -239,9 +295,15 @@ class _$SessionZeroImpl implements _SessionZero {
             (identical(other.setupMethod, setupMethod) ||
                 other.setupMethod == setupMethod) &&
             (identical(other.genre, genre) || other.genre == genre) &&
+            (identical(other.subgenre, subgenre) ||
+                other.subgenre == subgenre) &&
             (identical(other.tone, tone) || other.tone == tone) &&
             const DeepCollectionEquality()
                 .equals(other._favoriteStories, _favoriteStories) &&
+            const DeepCollectionEquality()
+                .equals(other._mediaInspiration, _mediaInspiration) &&
+            (identical(other.customPrompt, customPrompt) ||
+                other.customPrompt == customPrompt) &&
             (identical(other.twistsEnabled, twistsEnabled) ||
                 other.twistsEnabled == twistsEnabled));
   }
@@ -254,8 +316,11 @@ class _$SessionZeroImpl implements _SessionZero {
       mode,
       setupMethod,
       genre,
+      subgenre,
       tone,
       const DeepCollectionEquality().hash(_favoriteStories),
+      const DeepCollectionEquality().hash(_mediaInspiration),
+      customPrompt,
       twistsEnabled);
 
   /// Create a copy of SessionZero
@@ -280,8 +345,11 @@ abstract class _SessionZero implements SessionZero {
       required final String mode,
       required final String setupMethod,
       required final String genre,
+      required final String subgenre,
       required final String tone,
       required final List<String> favoriteStories,
+      required final List<String> mediaInspiration,
+      required final String customPrompt,
       required final bool twistsEnabled}) = _$SessionZeroImpl;
 
   factory _SessionZero.fromJson(Map<String, dynamic> json) =
@@ -296,9 +364,15 @@ abstract class _SessionZero implements SessionZero {
   @override
   String get genre;
   @override
+  String get subgenre;
+  @override
   String get tone;
   @override
   List<String> get favoriteStories;
+  @override
+  List<String> get mediaInspiration;
+  @override
+  String get customPrompt;
   @override
   bool get twistsEnabled;
 
