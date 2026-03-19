@@ -364,21 +364,39 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
       });
     }
 
-    // RPG mode: run a generic skill check
+    // RPG mode: smart skill check based on choice context
     if (storyState.mode == 'rpg' && storyState.rpgState != null) {
-      const defaultStat = 'strength';
+      // Infer which stat this choice tests from keywords
+      final narrative = _displayedText;
+      final inferredStat = RPGEngine.inferStatForChoice(choice, narrative);
       final statValue =
-          RPGEngine.getStatValue(storyState.rpgState!, defaultStat);
+          RPGEngine.getStatValue(storyState.rpgState!, inferredStat);
+
+      // Scale DC based on story progression
+      final currentOrder =
+          storyState.worldState['_currentBlueprintOrder'] as int? ?? 0;
+      final blueprint = storyState.blueprint;
+      String? nodeType;
+      if (blueprint != null) {
+        final nodes = blueprint.nodes.where((n) => n.order == currentOrder);
+        if (nodes.isNotEmpty) nodeType = nodes.first.type;
+      }
+      final dc = RPGEngine.scaleDC(storyState.scenes.length, nodeType: nodeType);
+
       final result = RPGEngine.performCheck(
-        stat: defaultStat,
+        stat: inferredStat,
         statValue: statValue,
-        dc: 13,
+        dc: dc,
       );
 
+      // Apply outcome — critical success grants bonus items
+      final itemsGained = result.roll == 20
+          ? ['Lucky Charm'] // bonus item on nat 20
+          : <String>[];
       final updatedRpg = RPGEngine.applyOutcome(
         current: storyState.rpgState!,
         result: result,
-        itemsGained: [],
+        itemsGained: itemsGained,
       );
       notifier.applyRpgOutcome(updatedRpg);
 
@@ -399,6 +417,17 @@ class _GameplayScreenState extends ConsumerState<GameplayScreen>
 
     notifier.recordChoice(choice);
     notifier.advanceBlueprint(choice);
+
+    // Inject skill check result into worldState for AI context
+    if (_lastSkillCheck != null) {
+      final checkResult = _lastSkillCheck!;
+      notifier.updateWorldState({
+        '_lastCheckStat': checkResult.stat,
+        '_lastCheckSuccess': checkResult.success,
+        '_lastCheckNarrative': checkResult.narrative,
+        '_lastCheckCritical': checkResult.roll == 20 || checkResult.roll == 1,
+      });
+    }
 
     if (mounted) setState(() => _isTransitioning = false);
     _startStreaming();

@@ -182,6 +182,13 @@ class StoryNotifier extends StateNotifier<StoryState> {
     );
   }
 
+  /// Merge additional entries into worldState.
+  void updateWorldState(Map<String, dynamic> updates) {
+    state = state.copyWith(
+      worldState: {...state.worldState, ...updates},
+    );
+  }
+
   /// Remove an item from RPG inventory.
   void removeInventoryItem(String item) {
     final rpg = state.rpgState;
